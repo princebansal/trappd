@@ -1,0 +1,29 @@
+buildscript {
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("net.ltgt.gradle:gradle-apt-plugin:${gradleAptPluginVersion}")
+    }
+}
+plugins {
+    id 'java'
+}
+
+allprojects {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    version = '0.0.1'
+    group = 'com.easycompany.trappd'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+}
+ext.lombokVersion = '1.18.12'
+ext.springVersion = '5.2.5.RELEASE'

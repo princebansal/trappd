@@ -1,0 +1,1 @@
+INSERT into country (code, flag, name) values ('IN','','India');

@@ -1,0 +1,5 @@
+rootProject.name = 'trappd'
+include 'api'
+include 'server'
+include 'common'
+
