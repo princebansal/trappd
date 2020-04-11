@@ -4,12 +4,14 @@ import com.easycompany.trappd.model.dto.CityDto;
 import com.easycompany.trappd.model.dto.CountryDto;
 import com.easycompany.trappd.model.dto.DashboardDto;
 import com.easycompany.trappd.model.dto.DetailedDataDto;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
-public class GetHomePageDataResponse {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = false)
+public class GetHomePageDataResponse extends BaseResponse {
 
   private CountryDto country;
   private CityDto city;

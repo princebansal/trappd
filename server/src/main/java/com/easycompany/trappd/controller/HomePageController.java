@@ -7,9 +7,6 @@ import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.service.HomePageService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -41,7 +38,6 @@ public class HomePageController implements HomePageApi {
   public ResponseEntity<GetHomePageDataResponse> getHomePageData(
       String countryCode, String cityCode)
       throws BadRequestException, CountryNotFoundException, CityNotFoundException {
-    List<String> a=new ArrayList<>();
     return ResponseEntity.ok(
         homePageService.getHomePageDataForCountryAndCity(countryCode, cityCode));
   }
