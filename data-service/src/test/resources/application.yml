@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+  #      please don't mark flyway enabled as true ,usage for this in AppConfig.java
+  flyway:
+    enabled: false
+    locations: classpath:/db/migration
+  profiles:
+    active: test
+amazonProperties:
+  accessKey: AKIAVC4PU53MG72XI3N4
+  secretKey: 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
+  bucketName: trappd-covid-data-snapshots

@@ -1,0 +1,1 @@
+INSERT into data_upload_status_history(file_path, processing_status, upload_date) values ('d','PROCESSED','2020-03-11 22:44:59');
