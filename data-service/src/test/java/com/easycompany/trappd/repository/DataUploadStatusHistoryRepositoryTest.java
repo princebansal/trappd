@@ -1,8 +1,7 @@
-package com.easycompany.trappd;
+package com.easycompany.trappd.repository;
 
-import com.easycompany.trappd.model.entity.DataUploadStatusHistoryEntity;
 import com.easycompany.trappd.model.constant.ProcessingStatus;
-import com.easycompany.trappd.repository.DataUploadStatusHistoryRepository;
+import com.easycompany.trappd.model.entity.DataUploadStatusHistoryEntity;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -78,7 +77,7 @@ class DataUploadStatusHistoryRepositoryTest {
         dataUploadStatusHistoryRepository.findAllByProcessingStatus(ProcessingStatus.PENDING);
     // Then
     Assertions.assertFalse(dataUploadStatusHistoryEntityList.isEmpty());
-    Assertions.assertEquals("2", dataUploadStatusHistoryEntityList.size());
+    Assertions.assertEquals(2, dataUploadStatusHistoryEntityList.size());
     Assertions.assertEquals(
         ProcessingStatus.PENDING, dataUploadStatusHistoryEntityList.get(0).getProcessingStatus());
     Assertions.assertEquals(

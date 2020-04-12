@@ -1,43 +1,29 @@
 package com.easycompany.trappd.scheduler;
 
-import com.easycompany.trappd.entity.DataUploadStatusHistoryEntity;
-import com.easycompany.trappd.exception.DataUploadStatusHistoryEntityNotFoundException;
-import com.easycompany.trappd.model.constant.ProcessingStatus;
-import com.easycompany.trappd.repository.DataUploadStatusHistoryRepository;
-import java.util.Optional;
+import com.easycompany.trappd.service.DataUpdaterService;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @EnableScheduling
 @Slf4j
 public class DataUpdaterScheduler {
 
-  private final DataUploadStatusHistoryRepository dataUploadStatusHistoryRepository;
+  private final DataUpdaterService dataUpdaterService;
 
   @Autowired
-  public DataUpdaterScheduler(DataUploadStatusHistoryRepository dataUploadStatusHistoryRepository) {
-    this.dataUploadStatusHistoryRepository = dataUploadStatusHistoryRepository;
+  public DataUpdaterScheduler(DataUpdaterService dataUpdaterService) {
+    this.dataUpdaterService = dataUpdaterService;
   }
 
   @SneakyThrows
-  @Scheduled(fixedDelay = 2000)
+  @Scheduled(fixedDelay = 5 * 60 * 1000)
   private void update() {
-    DataUploadStatusHistoryEntity dataUploadStatusHistoryEntity = dataUploadStatusHistoryRepository
-        .findFirstByOrderByUploadDateDesc().orElseThrow(()-> new DataUploadStatusHistoryEntityNotFoundException("No records present in the database"));
-    if(dataUploadStatusHistoryEntity.getProcessingStatus()== ProcessingStatus.PENDING){
-      startProcessingUpdate(dataUploadStatusHistoryEntity);
-    }
-  }
-
-  @Transactional(propagation = Propagation.REQUIRED)
-  protected void startProcessingUpdate(DataUploadStatusHistoryEntity dataUploadStatusHistoryEntity) {
-
+    dataUpdaterService.update();
   }
 }

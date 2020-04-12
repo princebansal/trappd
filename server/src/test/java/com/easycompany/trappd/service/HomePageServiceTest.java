@@ -22,7 +22,7 @@ class HomePageServiceTest {
   @Autowired HomePageService homePageService;
 
   @Test
-  @Sql({"classpath:/datasets/country.sql", "classpath:/datasets/city.sql"})
+  @Sql({"classpath:/datasets/cityStateCountry.sql"})
   void getListOfAllCitiesForCountry_giveValidCountry_expectNonZeroCities()
       throws CountryNotFoundException {
     // Given

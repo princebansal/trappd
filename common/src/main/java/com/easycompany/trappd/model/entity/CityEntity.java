@@ -1,5 +1,7 @@
-package com.easycompany.trappd.entity;
+package com.easycompany.trappd.model.entity;
 
+import javax.persistence.Cacheable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -19,12 +21,20 @@ import lombok.ToString;
 @Entity
 @EqualsAndHashCode(callSuper = false)
 @Table(name = "city")
+@Cacheable
 public class CityEntity extends AbstractBaseEntity {
   private String name;
   private String code;
 
+  private String otherName;
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "country_code", referencedColumnName = "code",nullable = false)
+  @JoinColumn(name = "state_code", referencedColumnName = "code",nullable = false)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
+  private StateEntity state;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name =   "country_code", referencedColumnName = "code",nullable = false)
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
   private CountryEntity country;

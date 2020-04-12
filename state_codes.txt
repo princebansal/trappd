@@ -35,3 +35,12 @@
 35	Ladakh	LA
 36	Lakshadweep	LD
 37	Puducherry	PY
+
+Awk to generate insert queries:
+awk '{out=""; for(i=2;i<=NF-1;i++){out=out" "$i;}; printf ("INSERT into state \(id,code,  name, country_code\) values \(%d,'\''%s'\'','\''%s'\'', '\''IN'\''\)\;\n",NR,$NF,out)}' state_codes.txt
+
+Awk to generate json:
+awk 'BEGIN{print "\{"}{out=""; for(i=2;i<=NF-1;i++){out=out" "$i};out=tolower(out); gsub(/^[ \t]+/,"",out);print "\""out"\":\""$NF"\","} END{print "\}"}' state_codes.txt
+
+
+

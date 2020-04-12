@@ -1,10 +1,8 @@
 package com.easycompany.trappd.repository;
 
-import com.easycompany.trappd.entity.CityEntity;
-import com.easycompany.trappd.entity.CountryEntity;
-import com.easycompany.trappd.model.dto.CityDto;
+import com.easycompany.trappd.model.entity.CityEntity;
+import com.easycompany.trappd.model.entity.CountryEntity;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,7 @@ class CityRepositoryTest {
   @Autowired private CityRepository cityRepository;
 
   @Test
-  @Sql({"classpath:/datasets/country.sql", "classpath:/datasets/city.sql"})
+  @Sql({"classpath:/datasets/cityStateCountry.sql"})
   public void findAll_retrieveAllCities_ExpectNonZeroLengthList() {
     // Given
     List<CityEntity> cityEntities = null;
@@ -31,14 +29,6 @@ class CityRepositoryTest {
     CountryEntity countryEntity = CountryEntity.builder().code("IN").name("India").flag("").build();
     List<CityEntity> expectedCities = new ArrayList<>();
 
-    expectedCities.add(
-        CityEntity.builder().code("BLR").name("Bangalore").country(countryEntity).build());
-    expectedCities.add(
-        CityEntity.builder().code("BOM").name("Mumbai").country(countryEntity).build());
-    expectedCities.add(
-        CityEntity.builder().code("DEL").name("Delhi").country(countryEntity).build());
-    expectedCities.add(
-        CityEntity.builder().code("CCU").name("Kolkata").country(countryEntity).build());
     // When
     cityEntities = cityRepository.findAll();
     // Then

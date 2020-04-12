@@ -1,8 +1,8 @@
 package com.easycompany.trappd.exception;
 
-public class DataUploadStatusHistoryEntityNotFoundException extends Exception {
+public class DataUpdaterServiceException extends Exception {
 
-  public DataUploadStatusHistoryEntityNotFoundException(String message) {
+  public DataUpdaterServiceException(String message) {
     super(message);
   }
 }

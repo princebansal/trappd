@@ -139,8 +139,8 @@ INSERT into city (id,code, name, other_name, state_code,country_code) values(138
 INSERT into city (id,code, name, other_name, state_code,country_code) values(139,'Surguja','Surguja','','CT','IN');
 INSERT into city (id,code, name, other_name, state_code,country_code) values(140,'Uttar Bastar Kanker','Uttar Bastar Kanker','','CT','IN');
 INSERT into city (id,code, name, other_name, state_code,country_code) values(141,'Dadra and Nagar Haveli','Dadra and Nagar Haveli','','DN','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(142,'Daman','Daman','','undefined','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(143,'Diu','Diu','','undefined','IN');
+INSERT into city (id,code, name, other_name, state_code,country_code) values(142,'Daman','Daman','','DD','IN');
+INSERT into city (id,code, name, other_name, state_code,country_code) values(143,'Diu','Diu','','DD','IN');
 INSERT into city (id,code, name, other_name, state_code,country_code) values(144,'Central Delhi','Central Delhi','','DL','IN');
 INSERT into city (id,code, name, other_name, state_code,country_code) values(145,'East Delhi','East Delhi','','DL','IN');
 INSERT into city (id,code, name, other_name, state_code,country_code) values(146,'New Delhi','New Delhi','','DL','IN');
@@ -726,11 +726,8 @@ INSERT into city (id,code, name, other_name, state_code,country_code) values(724
 INSERT into city (id,code, name, other_name, state_code,country_code) values(725,'Purulia','Purulia','puruliya','WB','IN');
 INSERT into city (id,code, name, other_name, state_code,country_code) values(726,'South 24 Parganas','South 24 Parganas','24 south parganas','WB','IN');
 INSERT into city (id,code, name, other_name, state_code,country_code) values(727,'Uttar Dinajpur','Uttar Dinajpur','','WB','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(728,'','','','MZ','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(729,'','','','MZ','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(730,'','','','MZ','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(731,'Tenkasi','Tenkasi','','TN','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(732,'Chengalpattu','Chengalpattu','','TN','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(733,'Ranipet','Ranipet','','TN','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(734,'Kallakurichi','Kallakurichi','','TN','IN');
-INSERT into city (id,code, name, other_name, state_code,country_code) values(735,'Tirupathur','Tirupathur','','TN','IN');
+INSERT into city (id,code, name, other_name, state_code,country_code) values(728,'Tenkasi','Tenkasi','','TN','IN');
+INSERT into city (id,code, name, other_name, state_code,country_code) values(729,'Chengalpattu','Chengalpattu','','TN','IN');
+INSERT into city (id,code, name, other_name, state_code,country_code) values(730,'Ranipet','Ranipet','','TN','IN');
+INSERT into city (id,code, name, other_name, state_code,country_code) values(731,'Kallakurichi','Kallakurichi','','TN','IN');
+INSERT into city (id,code, name, other_name, state_code,country_code) values(732,'Tirupathur','Tirupathur','','TN','IN');

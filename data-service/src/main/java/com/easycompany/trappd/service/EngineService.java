@@ -1,8 +1,7 @@
 package com.easycompany.trappd.service;
 
-import com.amazonaws.AmazonServiceException;
 import com.easycompany.trappd.config.AwsClient;
-import com.easycompany.trappd.entity.DataUploadStatusHistoryEntity;
+import com.easycompany.trappd.model.entity.DataUploadStatusHistoryEntity;
 import com.easycompany.trappd.exception.NoDataFoundToUploadException;
 import com.easycompany.trappd.model.constant.ProcessingStatus;
 import com.easycompany.trappd.model.dto.response.BaseResponse;

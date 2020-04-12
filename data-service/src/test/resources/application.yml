@@ -12,10 +12,6 @@ spring:
   h2:
     console:
       enabled: true
-  #      please don't mark flyway enabled as true ,usage for this in AppConfig.java
-  flyway:
-    enabled: false
-    locations: classpath:/db/migration
   profiles:
     active: test
 amazonProperties:

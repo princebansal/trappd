@@ -1,5 +1,7 @@
 package com.easycompany.trappd.model.constant;
 
-public class CaseStatus {
-
+public enum CaseStatus {
+  ACTIVE,
+  DECEASED,
+  RECOVERED
 }

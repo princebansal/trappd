@@ -20,7 +20,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.flywaydb:flyway-core'
-    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    implementation 'com.amazonaws:aws-java-sdk:1.11.133'
 
     compileOnly 'org.projectlombok:lombok'
 
@@ -29,7 +29,6 @@ dependencies {
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
-    annotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'

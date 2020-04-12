@@ -1,4 +1,10 @@
 dependencies {
+    implementation "org.springframework:spring-context:${springVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
+
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
 }

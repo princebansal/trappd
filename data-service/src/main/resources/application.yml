@@ -7,7 +7,7 @@ spring:
   jpa:
     database: mysql
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
       use-new-id-generator-mappings: false
     properties:
       hibernate:
@@ -16,13 +16,10 @@ spring:
         jdbc:
           batch_size: 10
         generate-statistics: true
+        order_inserts: true
     show-sql: true
-  flyway:
-    enabled: false
-    baseline-on-migrate: true
-    locations: classpath:db/migration
   application:
-    name: trappd
+    name: trappd-data-service
   jackson:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
@@ -60,3 +57,5 @@ amazonProperties:
   accessKey: AKIAVC4PU53MG72XI3N4
   secretKey: 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
   bucketName: trappd-covid-data-snapshots
+server:
+  port: 8081

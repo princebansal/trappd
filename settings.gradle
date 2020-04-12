@@ -2,4 +2,5 @@ rootProject.name = 'trappd'
 include 'api'
 include 'server'
 include 'common'
+include 'data-service'
 

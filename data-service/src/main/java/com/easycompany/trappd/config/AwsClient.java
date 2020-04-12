@@ -5,12 +5,18 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import java.io.InputStream;
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -58,27 +64,15 @@ public class AwsClient implements AwsS3Client {
     log.info("File uploaded to S3 at path {}/{}", bucketName, fileName);
   }
 
-  /*@Override
-    public Resource downloadFile(String pathToFile) throws AmazonS3BucketException {
-      File filePath = new File(pathToFile);
-      GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, filePath.getName());
-
-      Resource resource = null;
-      try {
-        S3Object s3Object = s3client.getObject(getObjectRequest);
-        resource = new InputStreamResource(s3Object.getObjectContent());
-
-      } catch (AmazonS3Exception e) {
-        log.error("S3 bucket download not working for file : {}", e);
-        throw new AmazonS3BucketException(pathToFile);
-
-      } catch (Exception e) {
-        log.error("S3 bucket download not working for file : {}", e);
-        throw new AmazonS3BucketException(pathToFile);
-      }
-      return resource;
-    }
-  */
+  @NotNull
+  @Override
+  public InputStream downloadFile(String fileName) {
+    log.info("File ready to download from S3 [ name: {}]", fileName);
+    GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, fileName);
+    S3Object s3Object = s3client.getObject(getObjectRequest);
+    log.info("File downloaded from S3 at path {}/{}", bucketName, fileName);
+    return s3Object.getObjectContent();
+  }
   /*@Override
   public String downloadFileInString(String pathToFile) throws IOException {
     byte[] base64byte = Base64.encodeBase64(downloadFileInBytes(pathToFile));

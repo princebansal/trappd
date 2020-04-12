@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TrappdApplication {
+public class TrappdDataServiceApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(TrappdApplication.class, args);
+    SpringApplication.run(TrappdDataServiceApplication.class, args);
   }
 }

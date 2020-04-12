@@ -1,7 +1,7 @@
 package com.easycompany.trappd.service;
 
-import com.easycompany.trappd.entity.CityEntity;
-import com.easycompany.trappd.entity.CountryEntity;
+import com.easycompany.trappd.model.entity.CityEntity;
+import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.exception.BadRequestException;
 import com.easycompany.trappd.exception.CityNotFoundException;
 import com.easycompany.trappd.exception.CountryNotFoundException;

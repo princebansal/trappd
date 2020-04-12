@@ -4,6 +4,7 @@ import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.Gender;
 import com.easycompany.trappd.model.constant.ProcessingStatus;
 import com.easycompany.trappd.model.constant.TransmissionType;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,29 +28,26 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity
 @EqualsAndHashCode(callSuper = false)
-@Table(name = "case")
-public class CaseEntity extends AbstractBaseEntity {
+@Table(name = "covid_case")
+public class CovidCaseEntity extends AbstractBaseEntity {
 
   @Column(nullable = false, unique = true)
   private String patientNumber;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "city_code", referencedColumnName = "code", nullable = false)
-  @EqualsAndHashCode.Exclude
-  @ToString.Exclude
   private CityEntity city;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "state_code", referencedColumnName = "code", nullable = false)
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
-  private StateEntity stateEntity;
+  private StateEntity state;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "country_code", referencedColumnName = "code", nullable = false)
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
-  private CountryEntity countryEntity;
+  private CountryEntity country;
 
   private Integer age;
 
@@ -57,25 +55,18 @@ public class CaseEntity extends AbstractBaseEntity {
   private Gender gender;
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private CaseStatus status;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private ProcessingStatus processingStatus;
+  private LocalDate recoveredDate;
+
+  private LocalDate deceasedDate;
 
   @Column(nullable = false)
-  private LocalDateTime recoveredDate;
-
-  @Column(nullable = false)
-  private LocalDateTime deceasedDate;
-
-  @Column(nullable = false)
-  private LocalDateTime announcedDate;
+  private LocalDate announcedDate;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
   private TransmissionType transmissionType;
 
-  @Column(nullable = false)
   private String extraInfo;
 }

@@ -1,5 +1,7 @@
 package com.easycompany.trappd.model.constant;
 
-public class TransmissionType {
-
+public enum TransmissionType {
+  LOCAL,
+  IMPORTED,
+  UNKNOWN
 }

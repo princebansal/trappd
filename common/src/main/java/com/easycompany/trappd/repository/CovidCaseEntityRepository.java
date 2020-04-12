@@ -1,11 +1,12 @@
 package com.easycompany.trappd.repository;
 
-import com.easycompany.trappd.model.entity.CountryEntity;
-import java.util.Optional;
+import com.easycompany.trappd.model.constant.CaseStatus;
+import com.easycompany.trappd.model.entity.CovidCaseEntity;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CountryRepository extends JpaRepository<CountryEntity, Long> {
-  Optional<CountryEntity> findByCode(String countryCode);
+public interface CovidCaseEntityRepository extends JpaRepository<CovidCaseEntity, Long> {
+  List<CovidCaseEntity> findAllByStatus(CaseStatus caseStatus);
 }

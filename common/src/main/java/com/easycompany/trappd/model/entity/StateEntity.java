@@ -1,14 +1,18 @@
 package com.easycompany.trappd.model.entity;
 
+import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode.Exclude;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -18,8 +22,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity
 @EqualsAndHashCode(callSuper = false)
-@Table(name = "city")
-public class CityEntity extends AbstractBaseEntity {
+@Table(name = "state")
+public class StateEntity extends AbstractBaseEntity {
   private String name;
   private String code;
 
@@ -28,4 +32,9 @@ public class CityEntity extends AbstractBaseEntity {
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
   private CountryEntity country;
+
+  @OneToMany(mappedBy = "state", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Exclude
+  @ToString.Exclude
+  private Set<CityEntity> cities;
 }

@@ -1,4 +1,4 @@
-package com.easycompany.trappd.entity;
+package com.easycompany.trappd.model.entity;
 
 import java.util.Set;
 import javax.persistence.CascadeType;
@@ -21,11 +21,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity
 @EqualsAndHashCode(callSuper = false)
-@Table(name = "country",uniqueConstraints = @UniqueConstraint(columnNames = "code"))
+@Table(name = "country", uniqueConstraints = @UniqueConstraint(columnNames = "code"))
 public class CountryEntity extends AbstractBaseEntity {
   private String name;
   private String code;
   private String flag;
+
+  @OneToMany(mappedBy = "country", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Exclude
+  @ToString.Exclude
+  private Set<StateEntity> states;
 
   @OneToMany(mappedBy = "country", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @Exclude

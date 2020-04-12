@@ -1,4 +1,4 @@
-package com.easycompany.trappd.entity;
+package com.easycompany.trappd.model.entity;
 
 import java.io.Serializable;
 import java.util.Date;

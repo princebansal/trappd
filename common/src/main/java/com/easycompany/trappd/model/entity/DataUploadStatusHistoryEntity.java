@@ -1,4 +1,4 @@
-package com.easycompany.trappd.entity;
+package com.easycompany.trappd.model.entity;
 
 import com.easycompany.trappd.model.constant.ProcessingStatus;
 import java.time.LocalDateTime;

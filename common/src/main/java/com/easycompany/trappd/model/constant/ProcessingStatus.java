@@ -1,5 +1,9 @@
-package com.easycompany.trappd.model.staticd;
+package com.easycompany.trappd.model.constant;
 
-public class ProcessingStatus {
-
+public enum ProcessingStatus {
+  PENDING,
+  PROCESSING,
+  PROCESSED,
+  OVERRIDDEN,
+  EXPIRED
 }

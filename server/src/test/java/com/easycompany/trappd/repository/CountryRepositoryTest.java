@@ -1,10 +1,8 @@
 package com.easycompany.trappd.repository;
 
-import com.easycompany.trappd.entity.CityEntity;
-import com.easycompany.trappd.entity.CountryEntity;
+import com.easycompany.trappd.model.entity.CountryEntity;
 import java.util.Collections;
 import java.util.List;
-import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +20,7 @@ class CountryRepositoryTest {
   @Autowired private CountryRepository countryRepository;
 
   @Test
-  @Sql({"classpath:/datasets/country.sql"})
+  @Sql({"classpath:/datasets/cityStateCountry.sql"})
   public void findAll_retrieveAllCountries_ExpectNonZeroLengthList() {
     // Given
     List<CountryEntity> countryEntities = null;
