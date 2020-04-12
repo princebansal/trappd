@@ -55,8 +55,8 @@ env:
   type: local
 
 amazonProperties:
-  accessKey: AKIAVC4PU53MG72XI3N4
-  secretKey: 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
+  accessKey:
+  secretKey:
   bucketName: trappd-covid-data-snapshots
 server:
   port: 8081
