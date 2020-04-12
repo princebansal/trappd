@@ -22,7 +22,7 @@ public class DataUpdaterScheduler {
   }
 
   @SneakyThrows
-  @Scheduled(fixedDelay = 5 * 60 * 1000)
+  @Scheduled(fixedDelay = 50 * 60 * 1000)
   private void update() {
     dataUpdaterService.update();
   }

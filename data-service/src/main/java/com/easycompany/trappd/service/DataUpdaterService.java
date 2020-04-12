@@ -6,25 +6,35 @@ import com.easycompany.trappd.mapper.CovidCaseDtoMapper;
 import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.ProcessingStatus;
 import com.easycompany.trappd.model.dto.CaseDto;
+import com.easycompany.trappd.model.dto.CovidCaseExtraInfoDto;
 import com.easycompany.trappd.model.entity.CityEntity;
+import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
 import com.easycompany.trappd.model.entity.DataUploadStatusHistoryEntity;
+import com.easycompany.trappd.model.entity.StateEntity;
 import com.easycompany.trappd.repository.CityRepository;
-import com.easycompany.trappd.repository.CovidCaseEntityRepository;
+import com.easycompany.trappd.repository.CountryRepository;
+import com.easycompany.trappd.repository.CovidCaseRepository;
 import com.easycompany.trappd.repository.DataUploadStatusHistoryRepository;
+import com.easycompany.trappd.repository.StateRepository;
+import com.easycompany.trappd.util.AppConstants;
+import com.easycompany.trappd.util.DateTimeUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @Slf4j
@@ -32,7 +42,7 @@ public class DataUpdaterService {
 
   private final DataUploadStatusHistoryRepository dataUploadStatusHistoryRepository;
 
-  private final CovidCaseEntityRepository covidCaseEntityRepository;
+  private final CovidCaseRepository covidCaseRepository;
 
   private final CovidCaseDtoMapper covidCaseDtoMapper;
 
@@ -42,24 +52,32 @@ public class DataUpdaterService {
 
   private final CityRepository cityRepository;
 
+  private final StateRepository stateRepository;
+
+  private final CountryRepository countryRepository;
+
   @Autowired
   public DataUpdaterService(
       DataUploadStatusHistoryRepository dataUploadStatusHistoryRepository,
-      CovidCaseEntityRepository covidCaseEntityRepository,
+      CovidCaseRepository covidCaseRepository,
       AwsClient awsClient,
       ObjectMapper objectMapper,
       CovidCaseDtoMapper covidCaseDtoMapper,
-      CityRepository cityRepository) {
+      CityRepository cityRepository,
+      StateRepository stateRepository,
+      CountryRepository countryRepository) {
     this.dataUploadStatusHistoryRepository = dataUploadStatusHistoryRepository;
-    this.covidCaseEntityRepository = covidCaseEntityRepository;
+    this.covidCaseRepository = covidCaseRepository;
     this.awsClient = awsClient;
     this.objectMapper = objectMapper;
     this.covidCaseDtoMapper = covidCaseDtoMapper;
     this.cityRepository = cityRepository;
+    this.stateRepository = stateRepository;
+    this.countryRepository = countryRepository;
   }
 
-  @SneakyThrows
-  public void update() {
+  @Transactional(propagation = Propagation.REQUIRED)
+  public void update() throws DataUpdaterServiceException, IOException {
     DataUploadStatusHistoryEntity lastDataUploadStatusHistoryEntity =
         dataUploadStatusHistoryRepository
             .findFirstByOrderByUploadDateDesc()
@@ -89,32 +107,151 @@ public class DataUpdaterService {
 
     // Retrieve all active cases from DB
     log.debug("Retrieving all @CaseStatus.ACTIVE cases from table [covid_case]");
-    List<CovidCaseEntity> latestExistingRecords =
-        covidCaseEntityRepository.findAllByStatus(CaseStatus.ACTIVE);
+    List<CovidCaseEntity> latestExistingRecords = covidCaseRepository.findAll();
 
     if (latestExistingRecords.size() == 0) {
+      // Bulk insert all records
+      log.debug("Bulk inserting all records as there is no history present");
       bulkInsertAllRecords(latestCaseList);
     } else {
+      // One to one check with hisotry and update records
+      log.debug("Checking latest data against old records to update");
       checkAndUpdateRecordsWitHistory(latestCaseList, latestExistingRecords);
+    }
+
+    lastDataUploadStatusHistoryEntity.setProcessingStatus(ProcessingStatus.PROCESSED);
+    dataUploadStatusHistoryRepository.save(lastDataUploadStatusHistoryEntity);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED)
+  protected void checkAndUpdateRecordsWitHistory(
+      List<CaseDto> latestCaseList, List<CovidCaseEntity> latestExistingRecords) {
+
+    if (latestCaseList.size() > latestExistingRecords.size()) {
+      // Bulk insert new cases
+      log.debug("Bulk inserting new records");
+      bulkInsertAllRecords(
+          latestCaseList.subList(latestExistingRecords.size() - 1, latestCaseList.size()));
+    }
+    Map<String, CovidCaseEntity> patientIdCovidCaseEntityMap =
+        latestExistingRecords.stream()
+            .collect(
+                Collectors.toMap(
+                    covidCaseEntity -> covidCaseEntity.getPatientNumber(),
+                    covidCaseEntity -> covidCaseEntity));
+    List<CaseDto> oldCasesSublist = latestCaseList.subList(0, latestExistingRecords.size());
+    List<CovidCaseEntity> covidCaseEntitiesToUpdate =
+        oldCasesSublist.stream()
+            .map(
+                caseDto -> {
+                  if (patientIdCovidCaseEntityMap.containsKey(caseDto.getPatientNumber())) {
+                    CovidCaseEntity covidCaseEntity =
+                        patientIdCovidCaseEntityMap.get(caseDto.getPatientNumber());
+                    if (covidCaseEntity.getStatus()
+                        != CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus())) {
+                      covidCaseEntity.setStatus(
+                          CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus()));
+                      setStatusDateForCovidCaseEnitity(caseDto, covidCaseEntity);
+                      return covidCaseEntity;
+                    }
+                  }
+                  return null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    if (covidCaseEntitiesToUpdate.size() > 0) {
+      // Bulk update new cases
+      log.debug("Bulk updating new records");
+      bulkUpdateAllRecords(covidCaseEntitiesToUpdate);
+    } else {
+      log.debug("There are no records to update");
     }
   }
 
-  private void checkAndUpdateRecordsWitHistory(
-      List<CaseDto> latestCaseList, List<CovidCaseEntity> la) {}
+  @Transactional(propagation = Propagation.REQUIRED)
+  protected void bulkUpdateAllRecords(List<CovidCaseEntity> covidCaseEntitiesToUpdate) {
+    covidCaseRepository.saveAll(covidCaseEntitiesToUpdate);
+    log.debug("Bulk inserted {} records successfully", covidCaseEntitiesToUpdate.size());
+  }
 
-  private void bulkInsertAllRecords(List<CaseDto> latestExistingRecords) {
+  @Transactional(propagation = Propagation.REQUIRED)
+  protected void bulkInsertAllRecords(List<CaseDto> latestExistingRecords) {
     List<CovidCaseEntity> covidCaseEntities =
         latestExistingRecords.stream()
+            .filter(caseDto -> !StringUtils.isEmpty(caseDto.getCurrentStatus()))
             .map(
                 caseDto -> {
                   CovidCaseEntity covidCaseEntity = covidCaseDtoMapper.toCovidCaseEntity(caseDto);
-                  CityEntity cityEntity =
-                      cityRepository.findByCode(caseDto.getDetectedCity()).get();
+                  List<CityEntity> cityEntities =
+                      cityRepository.findAllByCodeIgnoreCaseOrCodeIgnoreCase(
+                          caseDto.getDetectedCity(), caseDto.getDetectedDistrict());
+                  CityEntity cityEntity = cityEntities.stream().findFirst().orElse(null);
                   covidCaseEntity.setCity(cityEntity);
+                  StateEntity stateEntity =
+                      cityEntity != null
+                          ? cityEntity.getState()
+                          : stateRepository
+                              .findByCodeIgnoreCase(caseDto.getStateCode())
+                              .orElse(null);
+                  CountryEntity countryEntity =
+                      cityEntity != null
+                          ? cityEntity.getCountry()
+                          : (stateEntity != null
+                              ? stateEntity.getCountry()
+                              : countryRepository.findByCode("IN").get());
+                  if (cityEntity == null) {
+                    log.debug("City is null for [{}]", caseDto.getPatientNumber());
+                  }
+                  if (stateEntity == null) {
+                    log.debug("State is null for [{}]", caseDto.getPatientNumber());
+                  }
+                  if (stateEntity == null) {
+                    log.debug("Country is null for [{}]", caseDto.getPatientNumber());
+                  }
+                  covidCaseEntity.setState(stateEntity);
+                  covidCaseEntity.setCountry(countryEntity);
+                  setStatusDateForCovidCaseEnitity(caseDto, covidCaseEntity);
+                  covidCaseEntity.setExtraInfo(getExtraInfo(caseDto));
                   return covidCaseEntity;
                 })
             .collect(Collectors.toList());
-    covidCaseEntityRepository.saveAll(covidCaseEntities);
+    covidCaseRepository.saveAll(covidCaseEntities);
+    log.debug("Bulk inserted {} records successfully", covidCaseEntities.size());
+  }
+
+  private byte[] getExtraInfo(CaseDto caseDto) {
+    try {
+      return objectMapper
+          .writeValueAsString(
+              CovidCaseExtraInfoDto.builder()
+                  .statePatientNumber(caseDto.getStatePatientNumber())
+                  .backupNotes(caseDto.getBackupNotes())
+                  .contactPatient(caseDto.getContactPatient())
+                  .nationality(caseDto.getNationality())
+                  .notes(caseDto.getNotes())
+                  .source1(caseDto.getSource1())
+                  .source2(caseDto.getSource2())
+                  .source3(caseDto.getSource3())
+                  .build())
+          .getBytes();
+    } catch (JsonProcessingException e) {
+      log.error(e.getMessage());
+      return null;
+    }
+  }
+
+  private void setStatusDateForCovidCaseEnitity(CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
+    if (caseDto.getStatusChangeDate() != null) {
+      if (covidCaseEntity.getStatus() == CaseStatus.RECOVERED) {
+        covidCaseEntity.setRecoveredDate(
+            DateTimeUtil.parseLocalDate(
+                caseDto.getStatusChangeDate(), AppConstants.STATUS_CHANGE_DATE_FORMAT));
+      } else if (covidCaseEntity.getStatus() == CaseStatus.DECEASED) {
+        covidCaseEntity.setDeceasedDate(
+            DateTimeUtil.parseLocalDate(
+                caseDto.getStatusChangeDate(), AppConstants.STATUS_CHANGE_DATE_FORMAT));
+      }
+    }
   }
 
   private List<CaseDto> getCaseListFromHistory(

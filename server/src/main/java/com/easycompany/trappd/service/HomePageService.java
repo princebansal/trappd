@@ -1,5 +1,7 @@
 package com.easycompany.trappd.service;
 
+import com.amazonaws.services.opsworks.model.App;
+import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.exception.BadRequestException;
@@ -16,9 +18,21 @@ import com.easycompany.trappd.model.dto.DetailedDataDto;
 import com.easycompany.trappd.model.dto.ThingsToDoCardDto;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
+import com.easycompany.trappd.model.entity.CovidCaseEntity;
 import com.easycompany.trappd.repository.CityRepository;
 import com.easycompany.trappd.repository.CountryRepository;
-import java.util.ArrayList;
+import com.easycompany.trappd.repository.CovidCaseRepository;
+import com.easycompany.trappd.util.AppConstants;
+import com.easycompany.trappd.util.DateTimeUtil;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +41,7 @@ public class HomePageService {
 
   private final CountryRepository countryRepository;
   private final CityRepository cityRepository;
+  private final CovidCaseRepository covidCaseRepository;
   private final CountryEntityMapper countryEntityMapper;
   private final CityEntityMapper cityEntityMapper;
 
@@ -34,10 +49,12 @@ public class HomePageService {
   public HomePageService(
       CountryRepository countryRepository,
       CityRepository cityRepository,
+      CovidCaseRepository covidCaseRepository,
       CountryEntityMapper countryEntityMapper,
       CityEntityMapper cityEntityMapper) {
     this.countryRepository = countryRepository;
     this.cityRepository = cityRepository;
+    this.covidCaseRepository = covidCaseRepository;
     this.countryEntityMapper = countryEntityMapper;
     this.cityEntityMapper = cityEntityMapper;
   }
@@ -51,7 +68,11 @@ public class HomePageService {
                 () -> new CountryNotFoundException("Country not found with code " + countryCode));
     return GetAllCitiesResponse.builder()
         .countryDto(countryEntityMapper.toCountryDto(countryEntity))
-        .cities(cityEntityMapper.toCityDtoList(new ArrayList(countryEntity.getCities())))
+        .cities(
+            cityEntityMapper.toCityDtoList(
+                countryEntity.getCities().stream()
+                    .sorted(Comparator.comparing(CityEntity::getCode))
+                    .collect(Collectors.toList())))
         .build();
   }
 
@@ -67,63 +88,107 @@ public class HomePageService {
     CityEntity cityEntity =
         cityRepository
             .findByCode(cityCode)
-            .orElseThrow(
-                () -> new CityNotFoundException("City not found with code " + cityCode));
+            .orElseThrow(() -> new CityNotFoundException("City not found with code " + cityCode));
 
-    if(!cityEntity.getCountry().getCode().equalsIgnoreCase(countryCode)){
+    if (!cityEntity.getCountry().getCode().equalsIgnoreCase(countryCode)) {
       throw new BadRequestException("The city does not belong to given country");
     }
-    return
-        GetHomePageDataResponse.builder()
-            .city(cityEntityMapper.toCityDto(cityEntity))
-            .country(countryEntityMapper.toCountryDto(countryEntity))
-            .dashboard(
-                DashboardDto.builder()
-                    .dataInsightsCard(
-                        DataInsightsCardDto.builder()
-                            .date("5th April")
-                            .addItem(
-                                DataInsightsDto.builder().title("Total cases").value("20").build())
-                            .addItem(
-                                DataInsightsDto.builder().title("Total Deaths").value("20").build())
-                            .build())
-                    .thingsToDoCard(
-                        ThingsToDoCardDto.builder()
-                            .addItem("Play around")
-                            .addItem("Do something")
-                            .build())
-                    .moreInformation(
-                        DashboardMoreInformationDto.builder()
-                            .title("How to stay safe")
-                            .heading(
-                                "Washing your hands is the best way to help you stay safe. Here's how to do it")
-                            .addInstruction(
-                                "Wet your hands with clean, running water. Turn off the tap and apply soap.")
-                            .addInstruction(
-                                "Lather your hands by rubbing them together. Get the backs of your hands, between your fingers, and under your nails.")
-                            .build())
-                    .build())
-            .detailedData(
-                DetailedDataDto.builder()
-                    .addDataInsight(
-                        DataInsightsDto.builder().title("Total cases").value("20").build())
-                    .addDataInsight(
-                        DataInsightsDto.builder().title("Total Deaths").value("20").build())
-                    .addTimelinePhase(
-                        DataTimelineDto.builder()
-                            .date("5th")
-                            .day("Sat")
-                            .title("540 total cases")
-                            .subtitle("21 total deaths")
-                            .build())
-                    .addTimelinePhase(
-                        DataTimelineDto.builder()
-                            .date("4th")
-                            .day("Fri")
-                            .title("210 total cases")
-                            .subtitle("20 total deaths")
-                            .build())
-                    .build())
-            .build();
+
+    List<CovidCaseEntity> caseEntities =
+        covidCaseRepository.findAllByAnnouncedDateGreaterThanEqualAndCityOrderByAnnouncedDateDesc(
+            LocalDate.now().minus(10, ChronoUnit.DAYS), cityEntity);
+    Map<String, List<CovidCaseEntity>> localDateListMap =
+        caseEntities.stream()
+            .collect(
+                Collectors.groupingByConcurrent(
+                    covidCaseEntity ->
+                        DateTimeUtil.formatLocalDate(
+                            covidCaseEntity.getAnnouncedDate(),
+                            AppConstants.ANNOUNCED_DATE_FORMAT)));
+    long totalCases = covidCaseRepository.countAllByCity(cityEntity);
+    long totalDeaths = covidCaseRepository.countAllByStatusAndCity(CaseStatus.DECEASED, cityEntity);
+    String todaysDate = DateTimeUtil.todaysDateInUTCFormatted(AppConstants.ANNOUNCED_DATE_FORMAT);
+    long totalCasesToday =
+        localDateListMap.containsKey(todaysDate) ? localDateListMap.get(todaysDate).size() : 0;
+    long totalDeathsToday =
+        localDateListMap.containsKey(todaysDate)
+            ? localDateListMap.get(todaysDate).stream()
+                .filter(covidCaseEntity -> covidCaseEntity.getStatus() == CaseStatus.DECEASED)
+                .count()
+            : 0;
+    return GetHomePageDataResponse.builder()
+        .city(cityEntityMapper.toCityDto(cityEntity))
+        .country(countryEntityMapper.toCountryDto(countryEntity))
+        .dashboard(
+            DashboardDto.builder()
+                .dataInsightsCard(
+                    DataInsightsCardDto.builder()
+                        .date(DateTimeUtil.todaysDateInUTCFormatted(AppConstants.UI_DATE_FORMAT))
+                        .addItem(
+                            DataInsightsDto.builder()
+                                .title("Total cases")
+                                .value(String.valueOf(totalCasesToday))
+                                .build())
+                        .addItem(
+                            DataInsightsDto.builder()
+                                .title("Total Deaths")
+                                .value(String.valueOf(totalDeathsToday))
+                                .build())
+                        .build())
+                .thingsToDoCard(
+                    ThingsToDoCardDto.builder()
+                        .addItem("Play around")
+                        .addItem("Do something")
+                        .build())
+                .moreInformation(
+                    DashboardMoreInformationDto.builder()
+                        .title("How to stay safe")
+                        .heading(
+                            "Washing your hands is the best way to help you stay safe. Here's how to do it")
+                        .addInstruction(
+                            "Wet your hands with clean, running water. Turn off the tap and apply soap.")
+                        .addInstruction(
+                            "Lather your hands by rubbing them together. Get the backs of your hands, between your fingers, and under your nails.")
+                        .build())
+                .build())
+        .detailedData(
+            DetailedDataDto.builder()
+                .addDataInsight(
+                    DataInsightsDto.builder()
+                        .title("Total cases")
+                        .value(String.valueOf(totalCases))
+                        .build())
+                .addDataInsight(
+                    DataInsightsDto.builder()
+                        .title("Total Deaths")
+                        .value(String.valueOf(totalDeaths))
+                        .build())
+                .timeline(
+                    localDateListMap.entrySet().stream()
+                        .map(
+                            stringListEntry -> {
+                              LocalDate date =
+                                  DateTimeUtil.parseLocalDate(
+                                      stringListEntry.getKey(), AppConstants.ANNOUNCED_DATE_FORMAT);
+                              String formattedDate = DateTimeUtil.formatLocalDate(date, "dd, MMM");
+                              int totalCasesForDay = stringListEntry.getValue().size();
+                              long totalDeathsForDay =
+                                  stringListEntry.getValue().stream()
+                                      .filter(
+                                          covidCaseEntity ->
+                                              covidCaseEntity.getStatus() == CaseStatus.DECEASED)
+                                      .count();
+                              return DataTimelineDto.builder()
+                                  .date(formattedDate)
+                                  .day(
+                                      date.getDayOfWeek()
+                                          .getDisplayName(TextStyle.SHORT, Locale.getDefault()))
+                                  .title(totalCasesForDay + " total cases")
+                                  .subtitle(totalDeathsForDay + " total deaths")
+                                  .build();
+                            })
+                        .collect(Collectors.toList()))
+                .build())
+        .build();
   }
 }

@@ -36,4 +36,5 @@ public class CountryEntity extends AbstractBaseEntity {
   @Exclude
   @ToString.Exclude
   private Set<CityEntity> cities;
+
 }

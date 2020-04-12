@@ -1,16 +1,14 @@
 package com.easycompany.trappd.mapper;
 
-import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.Gender;
 import com.easycompany.trappd.model.dto.CaseDto;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
+import com.easycompany.trappd.util.AppConstants;
+import com.easycompany.trappd.util.DateTimeUtil;
 import com.easycompany.trappd.util.SampleDataSupplier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +35,7 @@ public class CovidCaseDtoMapperTest {
     Assertions.assertEquals(null, covidCaseEntity.getId());
     Assertions.assertEquals(caseDto.getPatientNumber(), covidCaseEntity.getPatientNumber());
     Assertions.assertEquals(
-        LocalDate.parse(caseDto.getDateAnnounced(), DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+        DateTimeUtil.parseLocalDate(caseDto.getDateAnnounced(), AppConstants.ANNOUNCED_DATE_FORMAT),
         covidCaseEntity.getAnnouncedDate());
     Assertions.assertNull(covidCaseEntity.getCity());
     Assertions.assertNull(covidCaseEntity.getState());

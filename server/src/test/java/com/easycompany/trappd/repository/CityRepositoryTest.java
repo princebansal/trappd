@@ -4,6 +4,7 @@ import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CountryEntity;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,5 +36,17 @@ class CityRepositoryTest {
     Assertions.assertNotNull(cityEntities);
     Assertions.assertTrue(cityEntities.size() > 0);
     Assertions.assertEquals(4, cityEntities.size());
+  }
+  @Test
+  @Sql({"classpath:/datasets/cityStateCountry.sql"})
+  public void findByCodeIgnoreCaseOrCodeIgnoreCase_retrieveCityByCode_expectValidResult() {
+    // Given
+    List<CityEntity> cityEntity = null;
+    // When
+    cityEntity = cityRepository.findAllByCodeIgnoreCaseOrCodeIgnoreCase("nicobars","nicobars");
+    // Then
+    Assertions.assertNotNull(cityEntity);
+    Assertions.assertEquals(1, cityEntity.size());
+    Assertions.assertEquals(1, cityEntity.get(0).getId());
   }
 }

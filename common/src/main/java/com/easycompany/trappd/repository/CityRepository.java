@@ -10,7 +10,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CityRepository extends JpaRepository<CityEntity, Long> {
 
-  Optional<CityEntity> findByCode(String code);
+  List<CityEntity> findAllByCodeIgnoreCaseOrCodeIgnoreCase(String code1, String code2);
 
   List<CityEntity> findAllByCountry(CountryEntity countryEntity);
+
+  Optional<CityEntity> findByCode(String cityCode);
 }

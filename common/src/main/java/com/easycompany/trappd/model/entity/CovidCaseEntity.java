@@ -62,11 +62,11 @@ public class CovidCaseEntity extends AbstractBaseEntity {
 
   private LocalDate deceasedDate;
 
-  @Column(nullable = false)
+  @Column
   private LocalDate announcedDate;
 
   @Enumerated(EnumType.STRING)
   private TransmissionType transmissionType;
 
-  private String extraInfo;
+  private byte[] extraInfo;
 }

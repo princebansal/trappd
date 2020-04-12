@@ -4,9 +4,10 @@ import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.Gender;
 import com.easycompany.trappd.model.constant.TransmissionType;
 import com.easycompany.trappd.model.dto.CaseDto;
-import com.easycompany.trappd.model.dto.CityDto;
-import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
+import com.easycompany.trappd.util.AppConstants;
+import com.easycompany.trappd.util.DateTimeUtil;
+import java.time.LocalDate;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -32,7 +33,9 @@ public interface CovidCaseDtoMapper {
     @Mapping(target = "country", ignore = true),
     @Mapping(target = "recoveredDate", ignore = true),
     @Mapping(target = "deceasedDate", ignore = true),
-    @Mapping(target = "announcedDate", source = "dateAnnounced", dateFormat = "dd/MM/yyyy"),
+    @Mapping(
+        target = "announcedDate",
+        expression = "java(emptyToNull(caseDto.getDateAnnounced()))"),
   })
   CovidCaseEntity toCovidCaseEntity(CaseDto caseDto);
 
@@ -79,5 +82,10 @@ public interface CovidCaseDtoMapper {
       default:
         return TransmissionType.UNKNOWN;
     }
+  }
+
+  default LocalDate emptyToNull(String s) {
+    if (s == null || s.isEmpty()) return null;
+    return DateTimeUtil.parseLocalDate(s, AppConstants.ANNOUNCED_DATE_FORMAT);
   }
 }

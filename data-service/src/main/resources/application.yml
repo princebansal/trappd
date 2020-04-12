@@ -14,10 +14,11 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         jdbc:
-          batch_size: 10
+          batch_size: 100
         generate-statistics: true
         order_inserts: true
-    show-sql: true
+        order_updates: true
+    show-sql: false
   application:
     name: trappd-data-service
   jackson:
