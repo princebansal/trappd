@@ -1,7 +1,7 @@
 package com.easycompany.trappd.service;
 
-import com.amazonaws.services.opsworks.model.App;
 import com.easycompany.trappd.model.constant.CaseStatus;
+import com.easycompany.trappd.model.dto.DashboardMoreInformationDto;
 import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.exception.BadRequestException;
@@ -10,7 +10,6 @@ import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.mapper.CityEntityMapper;
 import com.easycompany.trappd.mapper.CountryEntityMapper;
 import com.easycompany.trappd.model.dto.DashboardDto;
-import com.easycompany.trappd.model.dto.DashboardMoreInformationDto;
 import com.easycompany.trappd.model.dto.DataInsightsCardDto;
 import com.easycompany.trappd.model.dto.DataInsightsDto;
 import com.easycompany.trappd.model.dto.DataTimelineDto;
@@ -24,14 +23,16 @@ import com.easycompany.trappd.repository.CountryRepository;
 import com.easycompany.trappd.repository.CovidCaseRepository;
 import com.easycompany.trappd.util.AppConstants;
 import com.easycompany.trappd.util.DateTimeUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class HomePageService {
   private final CovidCaseRepository covidCaseRepository;
   private final CountryEntityMapper countryEntityMapper;
   private final CityEntityMapper cityEntityMapper;
+  private final ObjectMapper objectMapper;
 
   @Autowired
   public HomePageService(
@@ -51,12 +53,14 @@ public class HomePageService {
       CityRepository cityRepository,
       CovidCaseRepository covidCaseRepository,
       CountryEntityMapper countryEntityMapper,
-      CityEntityMapper cityEntityMapper) {
+      CityEntityMapper cityEntityMapper,
+      ObjectMapper objectMapper) {
     this.countryRepository = countryRepository;
     this.cityRepository = cityRepository;
     this.covidCaseRepository = covidCaseRepository;
     this.countryEntityMapper = countryEntityMapper;
     this.cityEntityMapper = cityEntityMapper;
+    this.objectMapper = objectMapper;
   }
 
   public GetAllCitiesResponse getListOfAllCitiesForCountry(String countryCode)
@@ -99,12 +103,15 @@ public class HomePageService {
             LocalDate.now().minus(10, ChronoUnit.DAYS), cityEntity);
     Map<String, List<CovidCaseEntity>> localDateListMap =
         caseEntities.stream()
+            .sequential()
             .collect(
-                Collectors.groupingByConcurrent(
+                Collectors.groupingBy(
                     covidCaseEntity ->
                         DateTimeUtil.formatLocalDate(
-                            covidCaseEntity.getAnnouncedDate(),
-                            AppConstants.ANNOUNCED_DATE_FORMAT)));
+                            covidCaseEntity.getAnnouncedDate(), AppConstants.ANNOUNCED_DATE_FORMAT),
+                    LinkedHashMap::new,
+                    Collectors.toList()));
+
     long totalCases = covidCaseRepository.countAllByCity(cityEntity);
     long totalDeaths = covidCaseRepository.countAllByStatusAndCity(CaseStatus.DECEASED, cityEntity);
     String todaysDate = DateTimeUtil.todaysDateInUTCFormatted(AppConstants.ANNOUNCED_DATE_FORMAT);
@@ -126,12 +133,12 @@ public class HomePageService {
                         .date(DateTimeUtil.todaysDateInUTCFormatted(AppConstants.UI_DATE_FORMAT))
                         .addItem(
                             DataInsightsDto.builder()
-                                .title("Total cases")
+                                .title("Total Cases in " + cityEntity.getName())
                                 .value(String.valueOf(totalCasesToday))
                                 .build())
                         .addItem(
                             DataInsightsDto.builder()
-                                .title("Total Deaths")
+                                .title("Total Deaths in " + cityEntity.getName())
                                 .value(String.valueOf(totalDeathsToday))
                                 .build())
                         .build())
@@ -141,21 +148,23 @@ public class HomePageService {
                         .addItem("Do something")
                         .build())
                 .moreInformation(
-                    DashboardMoreInformationDto.builder()
-                        .title("How to stay safe")
-                        .heading(
-                            "Washing your hands is the best way to help you stay safe. Here's how to do it")
-                        .addInstruction(
-                            "Wet your hands with clean, running water. Turn off the tap and apply soap.")
-                        .addInstruction(
-                            "Lather your hands by rubbing them together. Get the backs of your hands, between your fingers, and under your nails.")
-                        .build())
+                    /*DashboardMoreInformationDto.builder()
+                            .title("How to stay safe")
+                            .heading(
+                                "Washing your hands is the best way to help you stay safe. Here's how to do it")
+                            .addInstruction(
+                                "Wet your hands with clean, running water. Turn off the tap and apply soap.")
+                            .addInstruction(
+                                "Lather your hands by rubbing them together. Get the backs of your hands, between your fingers, and under your nails.")
+                            .build())
+                    .build()*/
+                    getMoreInformation())
                 .build())
         .detailedData(
             DetailedDataDto.builder()
                 .addDataInsight(
                     DataInsightsDto.builder()
-                        .title("Total cases")
+                        .title("Total Cases")
                         .value(String.valueOf(totalCases))
                         .build())
                 .addDataInsight(
@@ -170,7 +179,7 @@ public class HomePageService {
                               LocalDate date =
                                   DateTimeUtil.parseLocalDate(
                                       stringListEntry.getKey(), AppConstants.ANNOUNCED_DATE_FORMAT);
-                              String formattedDate = DateTimeUtil.formatLocalDate(date, "dd, MMM");
+                              String formattedDate = DateTimeUtil.formatLocalDate(date, "dd MMM");
                               int totalCasesForDay = stringListEntry.getValue().size();
                               long totalDeathsForDay =
                                   stringListEntry.getValue().stream()
@@ -190,5 +199,15 @@ public class HomePageService {
                         .collect(Collectors.toList()))
                 .build())
         .build();
+  }
+
+  private DashboardMoreInformationDto getMoreInformation() {
+    try {
+      return objectMapper.readValue(
+          AppConstants.SAMPLE_MORE_INFORMATION, DashboardMoreInformationDto.class);
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+      return DashboardMoreInformationDto.builder().build();
+    }
   }
 }
