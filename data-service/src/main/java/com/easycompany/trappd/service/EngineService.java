@@ -36,6 +36,7 @@ public class EngineService {
     this.dataUploadStatusHistoryRepository = dataUploadStatusHistoryRepository;
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   public BaseResponse updateDataInEngine(MultipartFile multipartFile) throws IOException {
     readAndUploadDataToS3(multipartFile);
     return BaseResponse.builder()
@@ -45,6 +46,7 @@ public class EngineService {
   }
 
   @Async
+  @Transactional(propagation = Propagation.REQUIRED)
   protected void readAndUploadDataToS3(MultipartFile multipartFile) {
 
     log.info("Starting to read the request payload");

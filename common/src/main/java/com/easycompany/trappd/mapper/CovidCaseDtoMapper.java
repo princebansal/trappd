@@ -35,7 +35,7 @@ public interface CovidCaseDtoMapper {
     @Mapping(target = "deceasedDate", ignore = true),
     @Mapping(
         target = "announcedDate",
-        expression = "java(emptyToNull(caseDto.getDateAnnounced()))"),
+        expression = "java(parseDate(caseDto.getDateAnnounced()))"),
   })
   CovidCaseEntity toCovidCaseEntity(CaseDto caseDto);
 
@@ -84,7 +84,7 @@ public interface CovidCaseDtoMapper {
     }
   }
 
-  default LocalDate emptyToNull(String s) {
+  default LocalDate parseDate(String s) {
     if (s == null || s.isEmpty()) return null;
     return DateTimeUtil.parseLocalDate(s, AppConstants.ANNOUNCED_DATE_FORMAT);
   }

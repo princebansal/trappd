@@ -21,6 +21,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Data
 @Builder
@@ -29,6 +30,7 @@ import lombok.ToString;
 @Entity
 @EqualsAndHashCode(callSuper = false)
 @Table(name = "covid_case")
+@DynamicUpdate
 public class CovidCaseEntity extends AbstractBaseEntity {
 
   @Column(nullable = false, unique = true)

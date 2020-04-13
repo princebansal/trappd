@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-@EnableCaching
+//@EnableCaching
 public class AppConfig {
 
   @Bean

@@ -3,10 +3,14 @@ package com.easycompany.trappd.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.easycompany.trappd.exception.DataUpdaterServiceException;
+import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.ProcessingStatus;
+import com.easycompany.trappd.model.dto.CaseDto;
+import com.easycompany.trappd.model.entity.CovidCaseEntity;
 import com.easycompany.trappd.model.entity.DataUploadStatusHistoryEntity;
 import com.easycompany.trappd.repository.DataUploadStatusHistoryRepository;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,10 +45,35 @@ class DataUpdaterServiceTest {
     // Given
     // When
     dataUpdaterService.update();
-    Optional<DataUploadStatusHistoryEntity> uploadStatusHistoryEntity = dataUploadStatusHistoryRepository
-        .findFirstByOrderByUploadDateDesc();
+    Optional<DataUploadStatusHistoryEntity> uploadStatusHistoryEntity =
+        dataUploadStatusHistoryRepository.findFirstByOrderByUploadDateDesc();
     // Then
     Assertions.assertTrue(uploadStatusHistoryEntity.isPresent());
-    Assertions.assertEquals(ProcessingStatus.PROCESSING,uploadStatusHistoryEntity.get().getProcessingStatus());
+    Assertions.assertEquals(
+        ProcessingStatus.PROCESSING, uploadStatusHistoryEntity.get().getProcessingStatus());
+  }
+
+  @Test
+  public void checkDateAnnounced_checkForSameDate_expectReturnFalse() {
+    // Given
+    LocalDate localDate = LocalDate.of(2020, 4, 13);
+    CovidCaseEntity covidCaseEntity = CovidCaseEntity.builder().announcedDate(localDate).build();
+    CaseDto caseDto = CaseDto.builder().dateAnnounced("13/04/2020").build();
+    // When
+    boolean shouldUpdate = dataUpdaterService.checkDateAnnounced(caseDto, covidCaseEntity);
+    // Then
+    Assertions.assertFalse(shouldUpdate);
+  }
+
+  @Test
+  public void checkCaseStatus_checkForSameStatus_expectReturnFalse() {
+    // Given
+
+    CovidCaseEntity covidCaseEntity = CovidCaseEntity.builder().status(CaseStatus.DECEASED).build();
+    CaseDto caseDto = CaseDto.builder().currentStatus("Deceased").build();
+    // When
+    boolean shouldUpdate = dataUpdaterService.checkCaseStatus(caseDto, covidCaseEntity);
+    // Then
+    Assertions.assertFalse(shouldUpdate);
   }
 }

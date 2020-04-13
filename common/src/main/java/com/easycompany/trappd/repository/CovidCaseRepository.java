@@ -17,4 +17,6 @@ public interface CovidCaseRepository extends JpaRepository<CovidCaseEntity, Long
 
   long countAllByStatusAndCity(CaseStatus caseStatus, CityEntity city);
   long countAllByCity(CityEntity city);
+
+  List<CovidCaseEntity> findAllByOrderById();
 }

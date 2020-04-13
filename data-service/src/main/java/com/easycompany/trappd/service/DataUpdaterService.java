@@ -4,6 +4,7 @@ import com.easycompany.trappd.config.AwsClient;
 import com.easycompany.trappd.exception.DataUpdaterServiceException;
 import com.easycompany.trappd.mapper.CovidCaseDtoMapper;
 import com.easycompany.trappd.model.constant.CaseStatus;
+import com.easycompany.trappd.model.constant.Gender;
 import com.easycompany.trappd.model.constant.ProcessingStatus;
 import com.easycompany.trappd.model.dto.CaseDto;
 import com.easycompany.trappd.model.dto.CovidCaseExtraInfoDto;
@@ -25,9 +26,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import org.springframework.util.StringUtils;
 
 @Service
 @Slf4j
+@Transactional
 public class DataUpdaterService {
 
   private final DataUploadStatusHistoryRepository dataUploadStatusHistoryRepository;
@@ -76,7 +78,7 @@ public class DataUpdaterService {
     this.countryRepository = countryRepository;
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  // @Transactional(propagation = Propagation.REQUIRED)
   public void update() throws DataUpdaterServiceException, IOException {
     DataUploadStatusHistoryEntity lastDataUploadStatusHistoryEntity =
         dataUploadStatusHistoryRepository
@@ -91,7 +93,7 @@ public class DataUpdaterService {
     startProcessingUpdate(lastDataUploadStatusHistoryEntity);
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  // @Transactional(propagation = Propagation.REQUIRED)
   protected void startProcessingUpdate(
       DataUploadStatusHistoryEntity lastDataUploadStatusHistoryEntity) throws IOException {
     log.debug("Starting update process");
@@ -107,7 +109,7 @@ public class DataUpdaterService {
 
     // Retrieve all active cases from DB
     log.debug("Retrieving all @CaseStatus.ACTIVE cases from table [covid_case]");
-    List<CovidCaseEntity> latestExistingRecords = covidCaseRepository.findAll();
+    List<CovidCaseEntity> latestExistingRecords = covidCaseRepository.findAllByOrderById();
 
     if (latestExistingRecords.size() == 0) {
       // Bulk insert all records
@@ -119,63 +121,108 @@ public class DataUpdaterService {
       checkAndUpdateRecordsWitHistory(latestCaseList, latestExistingRecords);
     }
 
+    log.debug("Marking record status @ProcessingStatus.PROCESSED");
     lastDataUploadStatusHistoryEntity.setProcessingStatus(ProcessingStatus.PROCESSED);
     dataUploadStatusHistoryRepository.save(lastDataUploadStatusHistoryEntity);
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  // @Transactional(propagation = Propagation.REQUIRED)
   protected void checkAndUpdateRecordsWitHistory(
       List<CaseDto> latestCaseList, List<CovidCaseEntity> latestExistingRecords) {
 
-    if (latestCaseList.size() > latestExistingRecords.size()) {
-      // Bulk insert new cases
-      log.debug("Bulk inserting new records");
-      bulkInsertAllRecords(
-          latestCaseList.subList(latestExistingRecords.size() - 1, latestCaseList.size()));
-    }
     Map<String, CovidCaseEntity> patientIdCovidCaseEntityMap =
         latestExistingRecords.stream()
             .collect(
                 Collectors.toMap(
                     covidCaseEntity -> covidCaseEntity.getPatientNumber(),
                     covidCaseEntity -> covidCaseEntity));
-    List<CaseDto> oldCasesSublist = latestCaseList.subList(0, latestExistingRecords.size());
-    List<CovidCaseEntity> covidCaseEntitiesToUpdate =
-        oldCasesSublist.stream()
-            .map(
-                caseDto -> {
-                  if (patientIdCovidCaseEntityMap.containsKey(caseDto.getPatientNumber())) {
-                    CovidCaseEntity covidCaseEntity =
-                        patientIdCovidCaseEntityMap.get(caseDto.getPatientNumber());
-                    if (covidCaseEntity.getStatus()
-                        != CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus())) {
-                      covidCaseEntity.setStatus(
-                          CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus()));
-                      setStatusDateForCovidCaseEnitity(caseDto, covidCaseEntity);
-                      return covidCaseEntity;
-                    }
-                  }
-                  return null;
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-    if (covidCaseEntitiesToUpdate.size() > 0) {
+
+    List<CaseDto> newCasesForBulkInsert = new ArrayList<>();
+    List<CovidCaseEntity> oldCasesForBulkUpdate = new ArrayList<>();
+    latestCaseList.stream()
+        .forEach(
+            caseDto -> {
+              if (!patientIdCovidCaseEntityMap.containsKey(caseDto.getPatientNumber())) {
+                newCasesForBulkInsert.add(caseDto);
+              } else {
+                CovidCaseEntity covidCaseEntity =
+                    patientIdCovidCaseEntityMap.get(caseDto.getPatientNumber());
+                boolean shouldUpdateRecord;
+
+                shouldUpdateRecord =
+                    checkDateAnnounced(caseDto, covidCaseEntity)
+                        || checkCaseStatus(caseDto, covidCaseEntity);
+                ;
+                if (shouldUpdateRecord) {
+                  oldCasesForBulkUpdate.add(covidCaseEntity);
+                }
+              }
+            });
+
+    if (newCasesForBulkInsert.size() > 0) {
+      // Bulk update new cases
+      log.debug("Bulk inserting new records");
+      bulkInsertAllRecords(newCasesForBulkInsert);
+    } else {
+      log.debug("There are no records to insert");
+    }
+    if (oldCasesForBulkUpdate.size() > 0) {
       // Bulk update new cases
       log.debug("Bulk updating new records");
-      bulkUpdateAllRecords(covidCaseEntitiesToUpdate);
+      bulkUpdateAllRecords(oldCasesForBulkUpdate);
     } else {
       log.debug("There are no records to update");
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
-  protected void bulkUpdateAllRecords(List<CovidCaseEntity> covidCaseEntitiesToUpdate) {
-    covidCaseRepository.saveAll(covidCaseEntitiesToUpdate);
-    log.debug("Bulk inserted {} records successfully", covidCaseEntitiesToUpdate.size());
+  // @Transactional(propagation = Propagation.REQUIRED)
+  protected boolean checkCaseStatus(CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
+
+    if (covidCaseEntity.getStatus()
+        != CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus())) {
+
+      log.trace(
+          "Case status changed for pid {} from {} to {}",
+          covidCaseEntity.getPatientNumber(),
+          covidCaseEntity.getStatus(),
+          CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus()));
+      covidCaseEntity.setStatus(
+          CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus()));
+      setStatusDateForCovidCaseEnitity(caseDto, covidCaseEntity);
+      return true;
+    }
+    return false;
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  // @Transactional(propagation = Propagation.REQUIRED)
+  protected boolean checkDateAnnounced(CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
+    if (covidCaseEntity
+            .getAnnouncedDate()
+            .compareTo(covidCaseDtoMapper.parseDate(caseDto.getDateAnnounced()))
+        != 0) {
+      log.trace(
+          "Announced date changed for pid {} from {} to {}",
+          covidCaseEntity.getPatientNumber(),
+          DateTimeUtil.formatLocalDate(
+              covidCaseEntity.getAnnouncedDate(), AppConstants.ANNOUNCED_DATE_FORMAT),
+          caseDto.getDateAnnounced());
+      covidCaseEntity.setAnnouncedDate(covidCaseDtoMapper.parseDate(caseDto.getDateAnnounced()));
+      covidCaseEntity.setGender(Gender.F);
+      return true;
+    }
+    return false;
+  }
+
+  // @Transactional(propagation = Propagation.REQUIRED)
+  protected void bulkUpdateAllRecords(List<CovidCaseEntity> covidCaseEntitiesToUpdate) {
+    //covidCaseRepository.saveAll(covidCaseEntitiesToUpdate);
+    log.debug("bulkUpdateAllRecords() called");
+    log.debug("Bulk updated {} records successfully", covidCaseEntitiesToUpdate.size());
+  }
+
+  // @Transactional(propagation = Propagation.REQUIRED)
   protected void bulkInsertAllRecords(List<CaseDto> latestExistingRecords) {
+    log.debug("bulkInsertAllRecords() called");
     List<CovidCaseEntity> covidCaseEntities =
         latestExistingRecords.stream()
             .filter(caseDto -> !StringUtils.isEmpty(caseDto.getCurrentStatus()))
@@ -219,6 +266,22 @@ public class DataUpdaterService {
     log.debug("Bulk inserted {} records successfully", covidCaseEntities.size());
   }
 
+  // @Transactional(propagation = Propagation.REQUIRED )
+  protected void setStatusDateForCovidCaseEnitity(
+      CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
+    if (caseDto.getStatusChangeDate() != null) {
+      if (covidCaseEntity.getStatus() == CaseStatus.RECOVERED) {
+        covidCaseEntity.setRecoveredDate(
+            DateTimeUtil.parseLocalDate(
+                caseDto.getStatusChangeDate(), AppConstants.STATUS_CHANGE_DATE_FORMAT));
+      } else if (covidCaseEntity.getStatus() == CaseStatus.DECEASED) {
+        covidCaseEntity.setDeceasedDate(
+            DateTimeUtil.parseLocalDate(
+                caseDto.getStatusChangeDate(), AppConstants.STATUS_CHANGE_DATE_FORMAT));
+      }
+    }
+  }
+
   private byte[] getExtraInfo(CaseDto caseDto) {
     try {
       return objectMapper
@@ -237,20 +300,6 @@ public class DataUpdaterService {
     } catch (JsonProcessingException e) {
       log.error(e.getMessage());
       return null;
-    }
-  }
-
-  private void setStatusDateForCovidCaseEnitity(CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
-    if (caseDto.getStatusChangeDate() != null) {
-      if (covidCaseEntity.getStatus() == CaseStatus.RECOVERED) {
-        covidCaseEntity.setRecoveredDate(
-            DateTimeUtil.parseLocalDate(
-                caseDto.getStatusChangeDate(), AppConstants.STATUS_CHANGE_DATE_FORMAT));
-      } else if (covidCaseEntity.getStatus() == CaseStatus.DECEASED) {
-        covidCaseEntity.setDeceasedDate(
-            DateTimeUtil.parseLocalDate(
-                caseDto.getStatusChangeDate(), AppConstants.STATUS_CHANGE_DATE_FORMAT));
-      }
     }
   }
 
