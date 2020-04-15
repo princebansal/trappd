@@ -47,6 +47,7 @@ public class AwsClient implements AwsS3Client {
     } else {
       this.s3client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTH_1).build();
     }
+    s3client.listBuckets();
   }
 
   private boolean isAccessSecretKeyAvailable() {
