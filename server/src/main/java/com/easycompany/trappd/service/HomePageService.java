@@ -133,12 +133,12 @@ public class HomePageService {
                         .date(DateTimeUtil.todaysDateInUTCFormatted(AppConstants.UI_DATE_FORMAT))
                         .addItem(
                             DataInsightsDto.builder()
-                                .title("Total Cases in " + cityEntity.getName())
+                                .title("Cases today in " + cityEntity.getName())
                                 .value(String.valueOf(totalCasesToday))
                                 .build())
                         .addItem(
                             DataInsightsDto.builder()
-                                .title("Total Deaths in " + cityEntity.getName())
+                                .title("Deaths today in " + cityEntity.getName())
                                 .value(String.valueOf(totalDeathsToday))
                                 .build())
                         .build())

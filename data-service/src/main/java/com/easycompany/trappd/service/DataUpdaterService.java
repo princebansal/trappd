@@ -78,7 +78,7 @@ public class DataUpdaterService {
     this.countryRepository = countryRepository;
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   public void update() throws DataUpdaterServiceException, IOException {
     DataUploadStatusHistoryEntity lastDataUploadStatusHistoryEntity =
         dataUploadStatusHistoryRepository
@@ -93,7 +93,7 @@ public class DataUpdaterService {
     startProcessingUpdate(lastDataUploadStatusHistoryEntity);
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   protected void startProcessingUpdate(
       DataUploadStatusHistoryEntity lastDataUploadStatusHistoryEntity) throws IOException {
     log.debug("Starting update process");
@@ -109,7 +109,7 @@ public class DataUpdaterService {
 
     // Retrieve all active cases from DB
     log.debug("Retrieving all @CaseStatus.ACTIVE cases from table [covid_case]");
-    List<CovidCaseEntity> latestExistingRecords = covidCaseRepository.findAllByOrderById();
+    List<CovidCaseEntity> latestExistingRecords = covidCaseRepository.findAll();
 
     if (latestExistingRecords.size() == 0) {
       // Bulk insert all records
@@ -126,7 +126,7 @@ public class DataUpdaterService {
     dataUploadStatusHistoryRepository.save(lastDataUploadStatusHistoryEntity);
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   protected void checkAndUpdateRecordsWitHistory(
       List<CaseDto> latestCaseList, List<CovidCaseEntity> latestExistingRecords) {
 
@@ -175,7 +175,7 @@ public class DataUpdaterService {
     }
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   protected boolean checkCaseStatus(CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
 
     if (covidCaseEntity.getStatus()
@@ -194,7 +194,7 @@ public class DataUpdaterService {
     return false;
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   protected boolean checkDateAnnounced(CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
     if (covidCaseEntity
             .getAnnouncedDate()
@@ -213,14 +213,14 @@ public class DataUpdaterService {
     return false;
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   protected void bulkUpdateAllRecords(List<CovidCaseEntity> covidCaseEntitiesToUpdate) {
-    //covidCaseRepository.saveAll(covidCaseEntitiesToUpdate);
+    // covidCaseRepository.saveAll(covidCaseEntitiesToUpdate);
     log.debug("bulkUpdateAllRecords() called");
     log.debug("Bulk updated {} records successfully", covidCaseEntitiesToUpdate.size());
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   protected void bulkInsertAllRecords(List<CaseDto> latestExistingRecords) {
     log.debug("bulkInsertAllRecords() called");
     List<CovidCaseEntity> covidCaseEntities =
@@ -247,13 +247,13 @@ public class DataUpdaterService {
                               ? stateEntity.getCountry()
                               : countryRepository.findByCode("IN").get());
                   if (cityEntity == null) {
-                    log.debug("City is null for [{}]", caseDto.getPatientNumber());
+                    log.trace("City is null for [{}]", caseDto.getPatientNumber());
                   }
                   if (stateEntity == null) {
-                    log.debug("State is null for [{}]", caseDto.getPatientNumber());
+                    log.trace("State is null for [{}]", caseDto.getPatientNumber());
                   }
                   if (stateEntity == null) {
-                    log.debug("Country is null for [{}]", caseDto.getPatientNumber());
+                    log.trace("Country is null for [{}]", caseDto.getPatientNumber());
                   }
                   covidCaseEntity.setState(stateEntity);
                   covidCaseEntity.setCountry(countryEntity);
@@ -266,7 +266,7 @@ public class DataUpdaterService {
     log.debug("Bulk inserted {} records successfully", covidCaseEntities.size());
   }
 
-  // @Transactional(propagation = Propagation.REQUIRED )
+  @Transactional(propagation = Propagation.REQUIRED)
   protected void setStatusDateForCovidCaseEnitity(
       CaseDto caseDto, CovidCaseEntity covidCaseEntity) {
     if (caseDto.getStatusChangeDate() != null) {

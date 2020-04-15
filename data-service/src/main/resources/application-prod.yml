@@ -52,7 +52,7 @@ management:
     loggers:
       enabled: true
 env:
-  type: local
+  type: prod
 
 amazonProperties:
   accessKey: AKIAVC4PU53MIDL5VDZO

@@ -13,6 +13,9 @@ configurations {
         extendsFrom annotationProcessor
     }
 }
+bootJar {
+    archiveName "trappd-data-service.jar"
+}
 dependencies {
     implementation project(':api')
     implementation project(':common')
