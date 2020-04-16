@@ -2,8 +2,8 @@ spring:
   profiles:
     active: main
   datasource:
-    password: root
-    url: jdbc:mysql://192.168.0.111:3306/trappd_db?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    password: ${RDS_KEY}
+    url: jdbc:mysql://trappd-db-prod.cwr1iqiduzzs.ap-south-1.rds.amazonaws.com:3306/trappd_db_prod?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
     username: root
     platform: mysql
   jpa:

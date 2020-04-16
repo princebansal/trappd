@@ -15,7 +15,7 @@ ARG JAR_FILE
 COPY ${JAR_FILE} app.jar
 
 # Start the Java process
-ENTRYPOINT ["java", "-Dspring.profiles.active=$PROFILE_NAME", "-jar", "app.jar"]
+ENTRYPOINT java -Dspring.profiles.active=$PROFILE_NAME -jar app.jar
 #ENTRYPOINT ["java", "-Dspring.profiles.active=$PROFILE_NAME", "-cp", ":app/lib","com.easycompany.trappd.TrappdApplication"]
 
 EXPOSE 8080

@@ -1,7 +1,7 @@
 spring:
   datasource:
-    password: root
-    url: jdbc:mysql://localhost:3306/trappd_db?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
+    password: ${RDS_KEY}
+    url: jdbc:mysql://trappd-db-prod.cwr1iqiduzzs.ap-south-1.rds.amazonaws.com:3306/trappd_db_prod?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
     username: root
     platform: mysql
   jpa:
@@ -59,4 +59,4 @@ amazonProperties:
   secretKey: ${AWS_SECRET_KEY}
   bucketName: trappd-covid-data-snapshots
 server:
-  port: 8081
+  port: 8080

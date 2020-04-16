@@ -1,7 +1,7 @@
 spring:
   datasource:
     password: root
-    url: jdbc:mysql://localhost:3306/trappd_db?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://192.168.0.111:3306/trappd_db?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
     username: root
     platform: mysql
   jpa:
