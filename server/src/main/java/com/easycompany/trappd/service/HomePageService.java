@@ -34,10 +34,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class HomePageService {
 
   private final CountryRepository countryRepository;
@@ -111,18 +113,10 @@ public class HomePageService {
                     LinkedHashMap::new,
                     Collectors.toList()));
 
+    long totalCases = covidCaseRepository.countAllByCity(cityEntity);
     long totalDeaths = covidCaseRepository.countAllByStatusAndCity(CaseStatus.DECEASED, cityEntity);
     long totalRecovered = covidCaseRepository.countAllByStatusAndCity(
         CaseStatus.RECOVERED, cityEntity);
-    String todaysDate = DateTimeUtil.todaysDateInUTCFormatted(AppConstants.ANNOUNCED_DATE_FORMAT);
-    long totalCasesToday =
-        localDateListMap.containsKey(todaysDate) ? localDateListMap.get(todaysDate).size() : 0;
-    long totalDeathsToday =
-        localDateListMap.containsKey(todaysDate)
-            ? localDateListMap.get(todaysDate).stream()
-                .filter(covidCaseEntity -> covidCaseEntity.getStatus() == CaseStatus.DECEASED)
-                .count()
-            : 0;
     return GetHomePageDataResponse.builder()
         .city(cityEntityMapper.toCityDto(cityEntity))
         .country(countryEntityMapper.toCountryDto(countryEntity))
@@ -133,13 +127,8 @@ public class HomePageService {
                         .date(DateTimeUtil.todaysDateInUTCFormatted(AppConstants.UI_DATE_FORMAT))
                         .addItem(
                             DataInsightsDto.builder()
-                                .title("Cases today in " + cityEntity.getName())
-                                .value(String.valueOf(totalCasesToday))
-                                .build())
-                        .addItem(
-                            DataInsightsDto.builder()
-                                .title("Deaths today in " + cityEntity.getName())
-                                .value(String.valueOf(totalDeathsToday))
+                                .title("Total Cases in " + cityEntity.getName())
+                                .value(String.valueOf(totalCases))
                                 .build())
                         .build())
                 .thingsToDoCard(
