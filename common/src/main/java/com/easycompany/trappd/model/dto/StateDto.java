@@ -25,8 +25,8 @@ public class StateDto {
   private String name;
 
   /**
-   * The Country code.
+   * The Country name.
    */
-  private String countryCode;
+  private String countryName;
 
 }

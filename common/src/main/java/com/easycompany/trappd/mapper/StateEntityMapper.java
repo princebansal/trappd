@@ -21,7 +21,7 @@ public interface StateEntityMapper {
    * @return the state dto
    */
   @Mappings({
-      @Mapping(source = "country.code", target = "countryCode"),
+      @Mapping(source = "country.name", target = "countryName"),
   })
   StateDto toStateDto(StateEntity stateEntity);
 

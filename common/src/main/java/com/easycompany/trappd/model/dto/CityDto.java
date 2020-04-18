@@ -25,13 +25,13 @@ public class CityDto {
   private String name;
 
   /**
-   * The State code.
+   * The State name.
    */
-  private String stateCode;
+  private String stateName;
 
   /**
-   * The Country code.
+   * The Country name.
    */
-  private String countryCode;
+  private String countryName;
 
 }

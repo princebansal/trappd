@@ -11,8 +11,8 @@ import org.mapstruct.Mappings;
 public interface CityEntityMapper {
 
   @Mappings({
-      @Mapping(source = "state.code", target = "stateCode"),
-      @Mapping(source = "country.code", target = "countryCode"),
+      @Mapping(source = "state.name", target = "stateName"),
+      @Mapping(source = "country.name", target = "countryName"),
   })
   CityDto toCityDto(CityEntity cityEntity);
   List<CityDto> toCityDtoList(List<CityEntity> cityEntities);
