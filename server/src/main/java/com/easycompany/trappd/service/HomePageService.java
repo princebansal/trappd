@@ -99,8 +99,7 @@ public class HomePageService {
     }
 
     List<CovidCaseEntity> caseEntities =
-        covidCaseRepository.findAllByAnnouncedDateGreaterThanEqualAndCityOrderByAnnouncedDateDesc(
-            LocalDate.now().minus(10, ChronoUnit.DAYS), cityEntity);
+        covidCaseRepository.findAllByCityOrderByAnnouncedDateDesc(cityEntity);
     Map<String, List<CovidCaseEntity>> localDateListMap =
         caseEntities.stream()
             .sequential()
@@ -174,6 +173,7 @@ public class HomePageService {
                         .build())
                 .timeline(
                     localDateListMap.entrySet().stream()
+                        .filter(stringListEntry -> stringListEntry.getValue().size() > 0)
                         .map(
                             stringListEntry -> {
                               LocalDate date =
@@ -196,6 +196,7 @@ public class HomePageService {
                                   .subtitle(totalDeathsForDay + " total deaths")
                                   .build();
                             })
+                        .limit(10)
                         .collect(Collectors.toList()))
                 .build())
         .build();
