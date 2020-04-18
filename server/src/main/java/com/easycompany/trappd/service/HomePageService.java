@@ -1,15 +1,14 @@
 package com.easycompany.trappd.service;
 
-import com.easycompany.trappd.model.constant.CaseStatus;
-import com.easycompany.trappd.model.dto.DashboardMoreInformationDto;
-import com.easycompany.trappd.model.entity.CityEntity;
-import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.exception.BadRequestException;
 import com.easycompany.trappd.exception.CityNotFoundException;
 import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.mapper.CityEntityMapper;
 import com.easycompany.trappd.mapper.CountryEntityMapper;
+import com.easycompany.trappd.mapper.StateEntityMapper;
+import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.dto.DashboardDto;
+import com.easycompany.trappd.model.dto.DashboardMoreInformationDto;
 import com.easycompany.trappd.model.dto.DataInsightsCardDto;
 import com.easycompany.trappd.model.dto.DataInsightsDto;
 import com.easycompany.trappd.model.dto.DataTimelineDto;
@@ -17,22 +16,27 @@ import com.easycompany.trappd.model.dto.DetailedDataDto;
 import com.easycompany.trappd.model.dto.ThingsToDoCardDto;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
+import com.easycompany.trappd.model.entity.CityEntity;
+import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
 import com.easycompany.trappd.repository.CityRepository;
 import com.easycompany.trappd.repository.CountryRepository;
 import com.easycompany.trappd.repository.CovidCaseRepository;
+import com.easycompany.trappd.repository.StateRepository;
 import com.easycompany.trappd.util.AppConstants;
 import com.easycompany.trappd.util.DateTimeUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,37 +47,51 @@ import org.springframework.stereotype.Service;
 public class HomePageService {
 
   private final CountryRepository countryRepository;
+  private final StateRepository stateRepository;
   private final CityRepository cityRepository;
   private final CovidCaseRepository covidCaseRepository;
   private final CountryEntityMapper countryEntityMapper;
+  private final StateEntityMapper stateEntityMapper;
   private final CityEntityMapper cityEntityMapper;
   private final ObjectMapper objectMapper;
 
   @Autowired
-  public HomePageService(
-      CountryRepository countryRepository,
-      CityRepository cityRepository,
-      CovidCaseRepository covidCaseRepository,
-      CountryEntityMapper countryEntityMapper,
-      CityEntityMapper cityEntityMapper,
-      ObjectMapper objectMapper) {
+  public HomePageService(CountryRepository countryRepository,
+                         StateRepository stateRepository,
+                         CityRepository cityRepository,
+                         CovidCaseRepository covidCaseRepository,
+                         CountryEntityMapper countryEntityMapper,
+                         StateEntityMapper stateEntityMapper,
+                         CityEntityMapper cityEntityMapper,
+                         ObjectMapper objectMapper) {
     this.countryRepository = countryRepository;
+    this.stateRepository = stateRepository;
     this.cityRepository = cityRepository;
     this.covidCaseRepository = covidCaseRepository;
     this.countryEntityMapper = countryEntityMapper;
+    this.stateEntityMapper = stateEntityMapper;
     this.cityEntityMapper = cityEntityMapper;
     this.objectMapper = objectMapper;
   }
 
   public GetAllCitiesResponse getListOfAllCitiesForCountry(String countryCode)
       throws CountryNotFoundException {
-    CountryEntity countryEntity =
-        countryRepository
-            .findByCode(countryCode)
-            .orElseThrow(
-                () -> new CountryNotFoundException("Country not found with code " + countryCode));
+
+    List<CountryEntity> countryEntities = new ArrayList<>();
+    CountryEntity countryEntity = countryRepository
+            .findByCode(Objects.isNull(countryCode) ? "IN" : countryCode)
+            .orElseThrow(() -> new CountryNotFoundException(
+                "Country not found with code " + countryCode));
+
+    if (Objects.isNull(countryCode)) {
+      countryEntities.addAll(countryRepository.findAll());
+    } else {
+      countryEntities.add(countryEntity);
+    }
+
     return GetAllCitiesResponse.builder()
-        .countryDto(countryEntityMapper.toCountryDto(countryEntity))
+        .countryDto(countryEntityMapper.toCountryDtoList(countryEntities))
+        .states(stateEntityMapper.toStateDtoList(stateRepository.findAllByCountry(countryEntity)))
         .cities(
             cityEntityMapper.toCityDtoList(
                 countryEntity.getCities().stream()

@@ -18,6 +18,8 @@ import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.service.HomePageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -47,7 +49,7 @@ class HomePageControllerTest {
     CountryDto requestCountry = CountryDto.builder().name("India").code("IN").build();
     GetAllCitiesResponse getAllCitiesResponse =
         GetAllCitiesResponse.builder()
-            .countryDto(requestCountry)
+            .countryDto(Collections.singletonList(requestCountry))
             .addCity(CityDto.builder().code("BLR").name("Bangalore").build())
             .addCity(CityDto.builder().code("BOM").name("Mumbai").build())
             .addCity(CityDto.builder().code("CCU").name("Kolkata").build())

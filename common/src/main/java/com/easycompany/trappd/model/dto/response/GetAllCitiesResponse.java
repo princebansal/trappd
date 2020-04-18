@@ -2,18 +2,35 @@ package com.easycompany.trappd.model.dto.response;
 
 import com.easycompany.trappd.model.dto.CityDto;
 import com.easycompany.trappd.model.dto.CountryDto;
+import com.easycompany.trappd.model.dto.StateDto;
+
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Singular;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * The type Get all cities response.
+ */
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = false)
 public class GetAllCitiesResponse extends BaseResponse {
-  private CountryDto countryDto;
 
+  /**
+   * The Country dto.
+   */
+  private List<CountryDto> countryDto;
+
+  /**
+   * The State dto.
+   */
+  private List<StateDto> states;
+
+  /**
+   * The Cities.
+   */
   @Singular("addCity")
   private List<CityDto> cities;
 }

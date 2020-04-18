@@ -6,13 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * The type City dto.
+ * The type State dto.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CityDto {
+public class StateDto {
 
   /**
    * The Code.
@@ -23,11 +23,6 @@ public class CityDto {
    * The Name.
    */
   private String name;
-
-  /**
-   * The State code.
-   */
-  private String stateCode;
 
   /**
    * The Country code.
