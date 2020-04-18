@@ -15,6 +15,8 @@ public interface CovidCaseRepository extends JpaRepository<CovidCaseEntity, Long
   List<CovidCaseEntity> findAllByAnnouncedDateGreaterThanEqualAndCityOrderByAnnouncedDateDesc(
       LocalDate announcedDate, CityEntity cityEntity);
 
+  List<CovidCaseEntity> findAllByCityOrderByAnnouncedDateDesc(CityEntity cityEntity);
+
   long countAllByStatusAndCity(CaseStatus caseStatus, CityEntity city);
   long countAllByCity(CityEntity city);
 
