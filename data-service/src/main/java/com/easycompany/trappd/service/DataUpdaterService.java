@@ -207,7 +207,6 @@ public class DataUpdaterService {
               covidCaseEntity.getAnnouncedDate(), AppConstants.ANNOUNCED_DATE_FORMAT),
           caseDto.getDateAnnounced());
       covidCaseEntity.setAnnouncedDate(covidCaseDtoMapper.parseDate(caseDto.getDateAnnounced()));
-      covidCaseEntity.setGender(Gender.F);
       return true;
     }
     return false;
@@ -229,6 +228,7 @@ public class DataUpdaterService {
             .map(
                 caseDto -> {
                   CovidCaseEntity covidCaseEntity = covidCaseDtoMapper.toCovidCaseEntity(caseDto);
+                  //Check if City code is null
                   List<CityEntity> cityEntities =
                       cityRepository.findAllByCodeIgnoreCaseOrCodeIgnoreCase(
                           caseDto.getDetectedCity(), caseDto.getDetectedDistrict());
@@ -252,7 +252,7 @@ public class DataUpdaterService {
                   if (stateEntity == null) {
                     log.trace("State is null for [{}]", caseDto.getPatientNumber());
                   }
-                  if (stateEntity == null) {
+                  if (countryEntity == null) {
                     log.trace("Country is null for [{}]", caseDto.getPatientNumber());
                   }
                   covidCaseEntity.setState(stateEntity);
