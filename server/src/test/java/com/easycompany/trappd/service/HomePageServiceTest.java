@@ -6,7 +6,6 @@ import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.model.dto.CountryDto;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 
-import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +39,7 @@ class HomePageServiceTest {
         () -> {
           homePageService.getListOfAllCitiesForCountry(countryDto.getCode());
         });
-    Assertions.assertEquals(Collections.singletonList(countryDto),getAllCitiesResponse.getCountryDto());
+    Assertions.assertEquals(countryDto,getAllCitiesResponse.getCountryDto());
 
   }
 }

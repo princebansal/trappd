@@ -13,6 +13,7 @@ import com.easycompany.trappd.model.dto.DataInsightsCardDto;
 import com.easycompany.trappd.model.dto.DataInsightsDto;
 import com.easycompany.trappd.model.dto.DataTimelineDto;
 import com.easycompany.trappd.model.dto.DetailedDataDto;
+import com.easycompany.trappd.model.dto.StateDto;
 import com.easycompany.trappd.model.dto.ThingsToDoCardDto;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
@@ -49,7 +50,7 @@ class HomePageControllerTest {
     CountryDto requestCountry = CountryDto.builder().name("India").code("IN").build();
     GetAllCitiesResponse getAllCitiesResponse =
         GetAllCitiesResponse.builder()
-            .countryDto(Collections.singletonList(requestCountry))
+            .countryDto(requestCountry)
             .addCity(CityDto.builder().code("BLR").name("Bangalore").build())
             .addCity(CityDto.builder().code("BOM").name("Mumbai").build())
             .addCity(CityDto.builder().code("CCU").name("Kolkata").build())
@@ -75,6 +76,7 @@ class HomePageControllerTest {
   void getHomePageData_provideValidRequest_expectValidResponse() throws Exception {
     // Given
     CountryDto requestCountry = CountryDto.builder().name("India").code("IN").build();
+    StateDto requestState = StateDto.builder().name("Chandigarh").code("CH").build();
     CityDto requestCity = CityDto.builder().code("BLR").name("Bangalore").build();
     GetHomePageDataResponse getHomePageDataResponse =
         GetHomePageDataResponse.builder()
@@ -131,12 +133,14 @@ class HomePageControllerTest {
     // When
     Mockito.doReturn(getHomePageDataResponse)
         .when(homePageService)
-        .getHomePageDataForCountryAndCity(requestCountry.getCode(), requestCity.getCode());
+        .getHomePageDataForCountryAndCity(requestCountry.getCode(), requestState.getCode(),
+            requestCity.getCode());
     // Then
     mockMvc
         .perform(
             get("/home/getHomePageData")
                 .param("countryCode", requestCountry.getCode())
+                .param("stateCode", requestState.getCode())
                 .param("cityCode", requestCity.getCode())
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())

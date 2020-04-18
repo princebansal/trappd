@@ -5,6 +5,7 @@ import com.easycompany.trappd.exception.BadRequestException;
 import com.easycompany.trappd.exception.CityNotFoundException;
 import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
+import com.easycompany.trappd.model.dto.response.GetAllGeographicalEntitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.service.HomePageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +34,19 @@ public class HomePageController implements HomePageApi {
     return ResponseEntity.ok(homePageService.getListOfAllCitiesForCountry(countryCode));
   }
 
+  @GetMapping("/getAllGeo")
+  @Override
+  public ResponseEntity<GetAllGeographicalEntitiesResponse> getAllGeographicalEntities(String countryCode)
+      throws CountryNotFoundException {
+    return ResponseEntity.ok(homePageService.getAllGeographicalEntities(countryCode));
+  }
+
   @GetMapping("/getHomePageData")
   @Override
   public ResponseEntity<GetHomePageDataResponse> getHomePageData(
-      String countryCode, String cityCode)
+      String countryCode, String stateCode, String cityCode)
       throws BadRequestException, CountryNotFoundException, CityNotFoundException {
     return ResponseEntity.ok(
-        homePageService.getHomePageDataForCountryAndCity(countryCode, cityCode));
+        homePageService.getHomePageDataForCountryAndCity(countryCode, stateCode, cityCode));
   }
 }

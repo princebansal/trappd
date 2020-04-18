@@ -15,10 +15,12 @@ import com.easycompany.trappd.model.dto.DataTimelineDto;
 import com.easycompany.trappd.model.dto.DetailedDataDto;
 import com.easycompany.trappd.model.dto.ThingsToDoCardDto;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
+import com.easycompany.trappd.model.dto.response.GetAllGeographicalEntitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
+import com.easycompany.trappd.model.entity.StateEntity;
 import com.easycompany.trappd.repository.CityRepository;
 import com.easycompany.trappd.repository.CountryRepository;
 import com.easycompany.trappd.repository.CovidCaseRepository;
@@ -77,11 +79,29 @@ public class HomePageService {
   public GetAllCitiesResponse getListOfAllCitiesForCountry(String countryCode)
       throws CountryNotFoundException {
 
+    CountryEntity countryEntity =
+        countryRepository
+            .findByCode(countryCode)
+            .orElseThrow(
+                () -> new CountryNotFoundException("Country not found with code " + countryCode));
+    return GetAllCitiesResponse.builder()
+        .countryDto(countryEntityMapper.toCountryDto(countryEntity))
+        .cities(
+            cityEntityMapper.toCityDtoList(
+                countryEntity.getCities().stream()
+                    .sorted(Comparator.comparing(CityEntity::getCode))
+                    .collect(Collectors.toList())))
+        .build();
+  }
+
+  public GetAllGeographicalEntitiesResponse getAllGeographicalEntities(String countryCode)
+      throws CountryNotFoundException {
+
     List<CountryEntity> countryEntities = new ArrayList<>();
     CountryEntity countryEntity = countryRepository
-            .findByCode(Objects.isNull(countryCode) ? "IN" : countryCode)
-            .orElseThrow(() -> new CountryNotFoundException(
-                "Country not found with code " + countryCode));
+        .findByCode(Objects.isNull(countryCode) ? "IN" : countryCode)
+        .orElseThrow(() -> new CountryNotFoundException(
+            "Country not found with code " + countryCode));
 
     if (Objects.isNull(countryCode)) {
       countryEntities.addAll(countryRepository.findAll());
@@ -89,9 +109,12 @@ public class HomePageService {
       countryEntities.add(countryEntity);
     }
 
-    return GetAllCitiesResponse.builder()
+    return GetAllGeographicalEntitiesResponse.builder()
         .countryDto(countryEntityMapper.toCountryDtoList(countryEntities))
-        .states(stateEntityMapper.toStateDtoList(stateRepository.findAllByCountry(countryEntity)))
+        .states(stateEntityMapper.toStateDtoList(
+            countryEntity.getStates().stream()
+                .sorted(Comparator.comparing(StateEntity::getCode))
+                .collect(Collectors.toList())))
         .cities(
             cityEntityMapper.toCityDtoList(
                 countryEntity.getCities().stream()
@@ -101,7 +124,7 @@ public class HomePageService {
   }
 
   public GetHomePageDataResponse getHomePageDataForCountryAndCity(
-      String countryCode, String cityCode)
+      String countryCode, String stateCode, String cityCode)
       throws CountryNotFoundException, CityNotFoundException, BadRequestException {
     CountryEntity countryEntity =
         countryRepository
