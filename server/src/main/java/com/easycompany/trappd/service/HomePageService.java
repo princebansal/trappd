@@ -111,8 +111,9 @@ public class HomePageService {
                     LinkedHashMap::new,
                     Collectors.toList()));
 
-    long totalCases = covidCaseRepository.countAllByCity(cityEntity);
     long totalDeaths = covidCaseRepository.countAllByStatusAndCity(CaseStatus.DECEASED, cityEntity);
+    long totalRecovered = covidCaseRepository.countAllByStatusAndCity(
+        CaseStatus.RECOVERED, cityEntity);
     String todaysDate = DateTimeUtil.todaysDateInUTCFormatted(AppConstants.ANNOUNCED_DATE_FORMAT);
     long totalCasesToday =
         localDateListMap.containsKey(todaysDate) ? localDateListMap.get(todaysDate).size() : 0;
@@ -163,17 +164,18 @@ public class HomePageService {
             DetailedDataDto.builder()
                 .addDataInsight(
                     DataInsightsDto.builder()
-                        .title("Total Cases")
-                        .value(String.valueOf(totalCases))
+                        .title("Total Deaths")
+                        .value(String.valueOf(totalDeaths))
                         .build())
                 .addDataInsight(
                     DataInsightsDto.builder()
-                        .title("Total Deaths")
-                        .value(String.valueOf(totalDeaths))
+                        .title("Total Recovered")
+                        .value(String.valueOf(totalRecovered))
                         .build())
                 .timeline(
                     localDateListMap.entrySet().stream()
                         .filter(stringListEntry -> stringListEntry.getValue().size() > 0)
+                        .limit(10)
                         .map(
                             stringListEntry -> {
                               LocalDate date =
@@ -196,7 +198,6 @@ public class HomePageService {
                                   .subtitle(totalDeathsForDay + " total deaths")
                                   .build();
                             })
-                        .limit(10)
                         .collect(Collectors.toList()))
                 .build())
         .build();
