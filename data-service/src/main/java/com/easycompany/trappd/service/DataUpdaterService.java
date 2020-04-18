@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +109,10 @@ public class DataUpdaterService {
     log.debug("Retrieving snapshot from S3 and deserializing");
     List<CaseDto> latestCaseList = getCaseListFromHistory(lastDataUploadStatusHistoryEntity);
 
+    if (latestCaseList == null) {
+      log.error("Returned cases is null from S3/local file. Skipping update");
+      return;
+    }
     // Retrieve all active cases from DB
     log.debug("Retrieving all @CaseStatus.ACTIVE cases from table [covid_case]");
     List<CovidCaseEntity> latestExistingRecords = covidCaseRepository.findAll();
@@ -224,15 +230,18 @@ public class DataUpdaterService {
     log.debug("bulkInsertAllRecords() called");
     List<CovidCaseEntity> covidCaseEntities =
         latestExistingRecords.stream()
-            .filter(caseDto -> !StringUtils.isEmpty(caseDto.getCurrentStatus()))
+            .filter(caseDto -> !StringUtils.isEmpty(caseDto.getStateCode()))
             .map(
                 caseDto -> {
                   CovidCaseEntity covidCaseEntity = covidCaseDtoMapper.toCovidCaseEntity(caseDto);
-                  //Check if City code is null
-                  List<CityEntity> cityEntities =
-                      cityRepository.findAllByCodeIgnoreCaseOrCodeIgnoreCase(
-                          caseDto.getDetectedCity(), caseDto.getDetectedDistrict());
-                  CityEntity cityEntity = cityEntities.stream().findFirst().orElse(null);
+                  // Check if City code is null
+                  CityEntity cityEntity = null;
+                  if (caseDto.getDetectedCity() != null && caseDto.getDetectedDistrict() != null) {
+                    List<CityEntity> cityEntities =
+                        cityRepository.findAllByCodeIgnoreCaseOrCodeIgnoreCase(
+                            caseDto.getDetectedCity(), caseDto.getDetectedDistrict());
+                    cityEntity = cityEntities.stream().findFirst().orElse(null);
+                  }
                   covidCaseEntity.setCity(cityEntity);
                   StateEntity stateEntity =
                       cityEntity != null
@@ -240,12 +249,11 @@ public class DataUpdaterService {
                           : stateRepository
                               .findByCodeIgnoreCase(caseDto.getStateCode())
                               .orElse(null);
-                  CountryEntity countryEntity =
-                      cityEntity != null
-                          ? cityEntity.getCountry()
-                          : (stateEntity != null
-                              ? stateEntity.getCountry()
-                              : countryRepository.findByCode("IN").get());
+                  if (stateEntity == null) {
+                    return null;
+                  }
+                  CountryEntity countryEntity = stateEntity.getCountry();
+
                   if (cityEntity == null) {
                     log.trace("City is null for [{}]", caseDto.getPatientNumber());
                   }
@@ -261,6 +269,7 @@ public class DataUpdaterService {
                   covidCaseEntity.setExtraInfo(getExtraInfo(caseDto));
                   return covidCaseEntity;
                 })
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
     covidCaseRepository.saveAll(covidCaseEntities);
     log.debug("Bulk inserted {} records successfully", covidCaseEntities.size());
@@ -303,21 +312,27 @@ public class DataUpdaterService {
     }
   }
 
-  private List<CaseDto> getCaseListFromHistory(
+  @Transactional(propagation = Propagation.REQUIRED)
+  protected List<CaseDto> getCaseListFromHistory(
       DataUploadStatusHistoryEntity lastDataUploadStatusHistoryEntity) throws IOException {
     InputStream inputStream =
         awsClient.downloadFile(lastDataUploadStatusHistoryEntity.getFilePath());
-    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+    if (inputStream != null) {
+      try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
 
-      String data = bufferedReader.lines().collect(Collectors.joining());
-      log.info("Read is successful.");
-      log.debug("Partial dump [{}]", data.length() > 1000 ? data.substring(0, 1000) : data);
+        String data = bufferedReader.lines().collect(Collectors.joining());
+        log.info("Read is successful.");
+        log.debug("Partial dump [{}]", data.length() > 1000 ? data.substring(0, 1000) : data);
 
-      return objectMapper.readValue(
-          data, objectMapper.getTypeFactory().constructCollectionType(List.class, CaseDto.class));
-    } catch (Exception e) {
-      log.error("Error occurred in file download/processing {}", e);
-      throw e;
+        return objectMapper.readValue(
+            data, objectMapper.getTypeFactory().constructCollectionType(List.class, CaseDto.class));
+      } catch (Exception e) {
+        log.error("Error occurred in file download/processing {}", e);
+        throw e;
+      }
+    } else {
+      log.error("Returned stream is null");
+      return null;
     }
   }
 }
