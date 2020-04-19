@@ -1,12 +1,15 @@
 package com.easycompany.trappd.service;
 
+import com.easycompany.trappd.builder.GeoObjectFactory;
 import com.easycompany.trappd.exception.BadRequestException;
 import com.easycompany.trappd.exception.CityNotFoundException;
 import com.easycompany.trappd.exception.CountryNotFoundException;
+import com.easycompany.trappd.exception.StateNotFoundException;
 import com.easycompany.trappd.mapper.CityEntityMapper;
 import com.easycompany.trappd.mapper.CountryEntityMapper;
 import com.easycompany.trappd.mapper.StateEntityMapper;
 import com.easycompany.trappd.model.constant.CaseStatus;
+import com.easycompany.trappd.model.constant.GeographyType;
 import com.easycompany.trappd.model.dto.DashboardDto;
 import com.easycompany.trappd.model.dto.DashboardMoreInformationDto;
 import com.easycompany.trappd.model.dto.DataInsightsCardDto;
@@ -17,6 +20,8 @@ import com.easycompany.trappd.model.dto.ThingsToDoCardDto;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetAllGeographicalEntitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
+import com.easycompany.trappd.model.dto.response.GetHomePageDataV2Response;
+import com.easycompany.trappd.model.entity.AbstractBaseEntity;
 import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
@@ -56,6 +61,7 @@ public class HomePageService {
   private final StateEntityMapper stateEntityMapper;
   private final CityEntityMapper cityEntityMapper;
   private final ObjectMapper objectMapper;
+  private final GeoObjectFactory geoObjectFactory;
 
   @Autowired
   public HomePageService(CountryRepository countryRepository,
@@ -65,7 +71,8 @@ public class HomePageService {
                          CountryEntityMapper countryEntityMapper,
                          StateEntityMapper stateEntityMapper,
                          CityEntityMapper cityEntityMapper,
-                         ObjectMapper objectMapper) {
+                         ObjectMapper objectMapper,
+                         GeoObjectFactory geoObjectFactory) {
     this.countryRepository = countryRepository;
     this.stateRepository = stateRepository;
     this.cityRepository = cityRepository;
@@ -74,6 +81,7 @@ public class HomePageService {
     this.stateEntityMapper = stateEntityMapper;
     this.cityEntityMapper = cityEntityMapper;
     this.objectMapper = objectMapper;
+    this.geoObjectFactory = geoObjectFactory;
   }
 
   public GetAllCitiesResponse getListOfAllCitiesForCountry(String countryCode)
@@ -124,7 +132,7 @@ public class HomePageService {
   }
 
   public GetHomePageDataResponse getHomePageDataForCountryAndCity(
-      String countryCode, String stateCode, String cityCode)
+      String countryCode, String cityCode)
       throws CountryNotFoundException, CityNotFoundException, BadRequestException {
     CountryEntity countryEntity =
         countryRepository
@@ -241,5 +249,10 @@ public class HomePageService {
       e.printStackTrace();
       return DashboardMoreInformationDto.builder().build();
     }
+  }
+
+  public GetHomePageDataV2Response getHomePageDataByGeography(GeographyType geoType, String geoValue)
+      throws CityNotFoundException, CountryNotFoundException, StateNotFoundException {
+    return geoObjectFactory.getDashboardObjectBuilder(geoType).createDashBoardDto(geoValue);
   }
 }
