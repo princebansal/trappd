@@ -1,11 +1,9 @@
 package com.easycompany.trappd.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.easycompany.trappd.exception.DataUpdaterServiceException;
 import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.ProcessingStatus;
-import com.easycompany.trappd.model.dto.CaseDto;
+import com.easycompany.trappd.model.dto.CaseDtoV2;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
 import com.easycompany.trappd.model.entity.DataUploadStatusHistoryEntity;
 import com.easycompany.trappd.repository.DataUploadStatusHistoryRepository;
@@ -58,9 +56,9 @@ class DataUpdaterServiceTest {
     // Given
     LocalDate localDate = LocalDate.of(2020, 4, 13);
     CovidCaseEntity covidCaseEntity = CovidCaseEntity.builder().announcedDate(localDate).build();
-    CaseDto caseDto = CaseDto.builder().dateAnnounced("13/04/2020").build();
+    CaseDtoV2 caseDtoV2 = CaseDtoV2.builder().dateAnnounced("13/04/2020").build();
     // When
-    boolean shouldUpdate = dataUpdaterService.checkDateAnnounced(caseDto, covidCaseEntity);
+    boolean shouldUpdate = dataUpdaterService.checkDateAnnounced(caseDtoV2, covidCaseEntity);
     // Then
     Assertions.assertFalse(shouldUpdate);
   }
@@ -70,9 +68,9 @@ class DataUpdaterServiceTest {
     // Given
 
     CovidCaseEntity covidCaseEntity = CovidCaseEntity.builder().status(CaseStatus.DECEASED).build();
-    CaseDto caseDto = CaseDto.builder().currentStatus("Deceased").build();
+    CaseDtoV2 caseDtoV2 = CaseDtoV2.builder().currentStatus("Deceased").build();
     // When
-    boolean shouldUpdate = dataUpdaterService.checkCaseStatus(caseDto, covidCaseEntity);
+    boolean shouldUpdate = dataUpdaterService.checkCaseStatus(caseDtoV2, covidCaseEntity);
     // Then
     Assertions.assertFalse(shouldUpdate);
   }

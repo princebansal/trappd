@@ -1,7 +1,7 @@
 package com.easycompany.trappd.mapper;
 
 import com.easycompany.trappd.model.constant.Gender;
-import com.easycompany.trappd.model.dto.CaseDto;
+import com.easycompany.trappd.model.dto.CaseDtoV2;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
 import com.easycompany.trappd.util.AppConstants;
 import com.easycompany.trappd.util.DateTimeUtil;
@@ -27,28 +27,28 @@ public class CovidCaseDtoMapperTest {
   public void toCovidCaseEntity_provideCaseDto_expectValidMappedResult()
       throws JsonProcessingException, ParseException {
     // Given
-    CaseDto caseDto = objectMapper.readValue(SampleDataSupplier.sampleCaseDto(), CaseDto.class);
+    CaseDtoV2 caseDtoV2 = objectMapper.readValue(SampleDataSupplier.sampleCaseDto(), CaseDtoV2.class);
     // When
-    CovidCaseEntity covidCaseEntity = covidCaseDtoMapper.toCovidCaseEntity(caseDto);
+    CovidCaseEntity covidCaseEntity = covidCaseDtoMapper.toCovidCaseEntity(caseDtoV2);
     // Then
     Assertions.assertNotNull(covidCaseEntity);
     Assertions.assertEquals(null, covidCaseEntity.getId());
-    Assertions.assertEquals(caseDto.getPatientNumber(), covidCaseEntity.getPatientNumber());
+    Assertions.assertEquals(caseDtoV2.getPatientNumber(), covidCaseEntity.getPatientNumber());
     Assertions.assertEquals(
-        DateTimeUtil.parseLocalDate(caseDto.getDateAnnounced(), AppConstants.ANNOUNCED_DATE_FORMAT),
+        DateTimeUtil.parseLocalDate(caseDtoV2.getDateAnnounced(), AppConstants.ANNOUNCED_DATE_FORMAT),
         covidCaseEntity.getAnnouncedDate());
     Assertions.assertNull(covidCaseEntity.getCity());
     Assertions.assertNull(covidCaseEntity.getState());
     Assertions.assertNull(covidCaseEntity.getCountry());
-    Assertions.assertEquals(Integer.valueOf(caseDto.getAgeBracket()), covidCaseEntity.getAge());
-    Assertions.assertEquals(Gender.valueOf(caseDto.getGender()), covidCaseEntity.getGender());
+    Assertions.assertEquals(Integer.valueOf(caseDtoV2.getAgeBracket()), covidCaseEntity.getAge());
+    Assertions.assertEquals(Gender.valueOf(caseDtoV2.getGender()), covidCaseEntity.getGender());
     Assertions.assertEquals(
-        CovidCaseDtoMapper.stringToCaseStatusEnum(caseDto.getCurrentStatus()),
+        CovidCaseDtoMapper.stringToCaseStatusEnum(caseDtoV2.getCurrentStatus()),
         covidCaseEntity.getStatus());
     Assertions.assertNull(covidCaseEntity.getRecoveredDate());
     Assertions.assertNull(covidCaseEntity.getDeceasedDate());
     Assertions.assertEquals(
-        CovidCaseDtoMapper.stringToTransmissionTypeEnum(caseDto.getTypeOfTransmission()),
+        CovidCaseDtoMapper.stringToTransmissionTypeEnum(caseDtoV2.getTypeOfTransmission()),
         covidCaseEntity.getTransmissionType());
     Assertions.assertNull(covidCaseEntity.getExtraInfo());
   }

@@ -2,9 +2,8 @@ package com.easycompany.trappd.mapper;
 
 import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.Gender;
-import com.easycompany.trappd.model.constant.TransmissionType;
-import com.easycompany.trappd.model.dto.CaseDtoV2;
-import com.easycompany.trappd.model.entity.CovidCaseEntity;
+import com.easycompany.trappd.model.dto.DeathAndRecoveryDto;
+import com.easycompany.trappd.model.entity.DeathAndRecoverCaseEntity;
 import com.easycompany.trappd.util.AppConstants;
 import com.easycompany.trappd.util.DateTimeUtil;
 import java.time.LocalDate;
@@ -15,31 +14,21 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
-public interface CovidCaseDtoMapper {
+public interface DeathAndRecoveryDtoMapper {
   @Mappings({
     @Mapping(source = "ageBracket", target = "age", qualifiedByName = "stringToInteger"),
     @Mapping(source = "gender", target = "gender", qualifiedByName = "stringToGenderEnum"),
-    @Mapping(
-        source = "currentStatus",
-        target = "status",
-        qualifiedByName = "stringToCaseStatusEnum"),
-    @Mapping(
-        source = "typeOfTransmission",
-        target = "transmissionType",
-        qualifiedByName = "stringToTransmissionTypeEnum"),
+    @Mapping(source = "status", target = "status", qualifiedByName = "stringToCaseStatusEnum"),
     @Mapping(target = "extraInfo", ignore = true),
     @Mapping(target = "city", ignore = true),
     @Mapping(target = "state", ignore = true),
     @Mapping(target = "country", ignore = true),
-    @Mapping(target = "recoveredDate", ignore = true),
-    @Mapping(target = "deceasedDate", ignore = true),
-    @Mapping(
-        target = "announcedDate",
-        expression = "java(parseDate(caseDtoV2.getDateAnnounced()))"),
+    @Mapping(target = "date", expression = "java(parseDate(deathAndRecoveryDto.getDate()))"),
   })
-  CovidCaseEntity toCovidCaseEntity(CaseDtoV2 caseDtoV2);
+  DeathAndRecoverCaseEntity toDeathAndRecoveryCaseEntity(DeathAndRecoveryDto deathAndRecoveryDto);
 
-  List<CovidCaseEntity> toCovidCaseEntityList(List<CaseDtoV2> caseDtoV2List);
+  List<DeathAndRecoverCaseEntity> toDeathAndRecoveryCaseEntityList(
+      List<DeathAndRecoveryDto> deathAndRecoveryDtoList);
 
   @Named("stringToInteger")
   static Integer stringToInteger(String s) {
@@ -69,18 +58,6 @@ public interface CovidCaseDtoMapper {
       case "Hospitalized":
       default:
         return CaseStatus.ACTIVE;
-    }
-  }
-
-  @Named("stringToTransmissionTypeEnum")
-  static TransmissionType stringToTransmissionTypeEnum(String s) {
-    switch (s) {
-      case "Imported":
-        return TransmissionType.IMPORTED;
-      case "Local":
-        return TransmissionType.LOCAL;
-      default:
-        return TransmissionType.UNKNOWN;
     }
   }
 

@@ -12,7 +12,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: true
+        format_sql: false
         jdbc:
           batch_size: 100
         generate-statistics: true
@@ -35,13 +35,13 @@ logging:
         trappd: debug
     org:
       hibernate:
-        SQL: info
+        SQL: debug
         type:
           descriptor:
-            sql: info
+            sql: debug
       springframework:
         orm:
-          jpa: info
+          jpa: debug
         transaction: info
 management:
   endpoints:
