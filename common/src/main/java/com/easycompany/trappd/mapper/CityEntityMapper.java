@@ -12,6 +12,7 @@ public interface CityEntityMapper {
 
   @Mappings({
       @Mapping(source = "state.name", target = "stateName"),
+      @Mapping(source = "state.code", target = "stateCode"),
       @Mapping(source = "country.name", target = "countryName"),
   })
   CityDto toCityDto(CityEntity cityEntity);

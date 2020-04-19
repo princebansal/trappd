@@ -3,6 +3,7 @@ package com.easycompany.trappd.builder;
 import com.easycompany.trappd.exception.CityNotFoundException;
 import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.exception.StateNotFoundException;
+import com.easycompany.trappd.model.constant.GeographyType;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataV2Response;
 
 import lombok.extern.slf4j.Slf4j;

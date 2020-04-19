@@ -29,6 +29,12 @@ public class CityDto {
    */
   private String stateName;
 
+
+  /**
+   * The State code.
+   */
+  private String stateCode;
+
   /**
    * The Country name.
    */
