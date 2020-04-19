@@ -12,33 +12,33 @@ Build project using
 Command to build docker image <br>
 `docker build --build-arg JAR_FILE=server/build/libs/*.jar -t trappd/server .`
 Command to run docker image <br>
-`docker run -p 8080:8080 -t trappd/server`
-Command to tag docker image
-`docker tag trappd/server:latest princebansal94/trappd:trappd-server-{version}}`
-Command to push docker image to hub
-`docker push princebansal94/trappd:trappd-server-{version}`
-### Trappd Data Service
+`docker run -p 8080:8080 -t trappd/server` <br>
+Command to tag docker image <br>
+`docker tag trappd/server:latest princebansal94/trappd:trappd-server-{version}}` <br>
+Command to push docker image to hub <br>
+`docker push princebansal94/trappd:trappd-server-{version}` <br>
+### Trappd Data Service <br>
 Command to build docker image <br>
-`docker build --build-arg JAR_FILE=data-service/build/libs/*.jar -t trappd/data-service .`
+`docker build --build-arg JAR_FILE=data-service/build/libs/*.jar -t trappd/data-service .` <br>
 Command to run docker image <br>
-`docker run -p 8080:8081 -t trappd/data-service`
-Command to tag docker image
-`docker tag trappd/data-service:latest princebansal94/trappd:trappd-data-service-{version}}`
-Command to push docker image to hub
-`docker push princebansal94/trappd:trappd-data-service-{version}`
+`docker run -p 8080:8081 -t trappd/data-service` <br>
+Command to tag docker image <br>
+`docker tag trappd/data-service:latest princebansal94/trappd:trappd-data-service-{version}}` <br>
+Command to push docker image to hub <br>
+`docker push princebansal94/trappd:trappd-data-service-{version}` <br>
 ### Trappd Engine
 Command to build docker image <br>
 `docker build -t trappd/engine .`
 Command to run docker image <br>
-`docker run -e DATA_SERVICE_URL={DATA_SERVICE_DOCKER_URL} trappd/engine`
-Command to tag docker image
-`docker tag trappd/engine:latest princebansal94/trappd:trappd-engine-{version}}`
-Command to push docker image to hub
-`docker push princebansal94/trappd:trappd-engine-{version}`
+`docker run -e DATA_SERVICE_URL={DATA_SERVICE_DOCKER_URL} trappd/engine` <br>
+Command to tag docker image <br>
+`docker tag trappd/engine:latest princebansal94/trappd:trappd-engine-{version}}` <br>
+Command to push docker image to hub <br>
+`docker push princebansal94/trappd:trappd-engine-{version}` <br>
 
 ### EC2
 Command to login to EC2 instance <br>
-`ssh -i <PEM_FILE_LOCATION> ec2-user@ec2-13-127-157-72.ap-south-1.compute.amazonaws.com`
+`ssh -i <PEM_FILE_LOCATION> ec2-user@ec2-13-127-157-72.ap-south-1.compute.amazonaws.com` <br>
 
 ### RDS
 Command to login to RDS

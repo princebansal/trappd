@@ -1,6 +1,7 @@
 package com.easycompany.trappd.model.entity;
 
 import java.util.Set;
+import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -23,6 +24,7 @@ import lombok.ToString;
 @Entity
 @EqualsAndHashCode(callSuper = false)
 @Table(name = "state")
+@Cacheable
 public class StateEntity extends AbstractBaseEntity {
   private String name;
   private String code;

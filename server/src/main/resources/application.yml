@@ -3,7 +3,7 @@ spring:
     active: main
   datasource:
     password: root
-    url: jdbc:mysql://localhost:3306/trappd_db?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/trappd_db?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true
     username: root
     platform: mysql
   jpa:
