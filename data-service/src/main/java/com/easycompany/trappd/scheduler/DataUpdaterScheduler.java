@@ -1,7 +1,6 @@
 package com.easycompany.trappd.scheduler;
 
-import com.easycompany.trappd.service.DataUpdaterService;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.easycompany.trappd.service.DataUpdaterServiceV2;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +12,19 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableScheduling
 @Slf4j
-@Order(2)
+@Order(4)
 public class DataUpdaterScheduler {
 
-  private final DataUpdaterService dataUpdaterService;
+  private final DataUpdaterServiceV2 dataUpdaterServiceV2;
 
   @Autowired
-  public DataUpdaterScheduler(DataUpdaterService dataUpdaterService) {
-    this.dataUpdaterService = dataUpdaterService;
+  public DataUpdaterScheduler(DataUpdaterServiceV2 dataUpdaterServiceV2) {
+    this.dataUpdaterServiceV2 = dataUpdaterServiceV2;
   }
 
   @SneakyThrows
   @Scheduled(fixedDelay = 50 * 60 * 1000)
   private void update() {
-    dataUpdaterService.update();
+    dataUpdaterServiceV2.update();
   }
 }

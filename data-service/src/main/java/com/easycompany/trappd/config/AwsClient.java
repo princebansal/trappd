@@ -45,18 +45,20 @@ public class AwsClient implements AwsS3Client {
 
   @PostConstruct
   private void initializeAws() {
-
-    if (isAccessSecretKeyAvailable()) {
-      BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-      this.s3client =
-          AmazonS3ClientBuilder.standard()
-              .withRegion(Regions.AP_SOUTH_1)
-              .withCredentials(new AWSStaticCredentialsProvider(credentials))
-              .build();
-    } else {
-      this.s3client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTH_1).build();
+    try {
+      if (isAccessSecretKeyAvailable()) {
+        BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        this.s3client =
+            AmazonS3ClientBuilder.standard()
+                .withRegion(Regions.AP_SOUTH_1)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .build();
+      } else {
+        this.s3client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTH_1).build();
+      }
+    } catch (Exception e) {
+      this.s3client=AmazonS3ClientBuilder.defaultClient();
     }
-    s3client.listBuckets();
   }
 
   private boolean isAccessSecretKeyAvailable() {
@@ -78,13 +80,14 @@ public class AwsClient implements AwsS3Client {
   @Override
   public InputStream downloadFile(String fileName) throws FileNotFoundException {
     log.info("File ready to download from S3 [ name: {}]", fileName);
-    File file = new File(fileName);
+    String directory = "/tmp/trappd/";
+    File file = new File(directory + fileName);
     if (!file.exists()) {
       log.debug("Local file doesn't exists");
       GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, fileName);
       S3Object s3Object = s3client.getObject(getObjectRequest);
       log.info("File downloaded from S3 at path {}/{}", bucketName, fileName);
-      return copyToDumpFile(s3Object.getObjectContent(), fileName);
+      return copyToDumpFile(s3Object.getObjectContent(), fileName, directory);
     } else {
       log.debug("Local file exists. Falling back to local file instead of S3");
       try {
@@ -96,15 +99,17 @@ public class AwsClient implements AwsS3Client {
     throw new FileNotFoundException("File not found to be downloaded with name " + fileName);
   }
 
-  private InputStream copyToDumpFile(S3ObjectInputStream inputStream, String fileName) {
+  private InputStream copyToDumpFile(
+      S3ObjectInputStream inputStream, String fileName, String directoryName) {
+    log.debug("Copying file to local instance");
     FileOutputStream outstream = null;
 
     try {
-      File directory = new File("/tmp/trappd/");
+      File directory = new File(directoryName);
       if (!directory.exists()) {
         directory.mkdir();
       }
-      File outfile=new File("/tmp/trappd/"+fileName);
+      File outfile = new File(directoryName + fileName);
       if (!outfile.exists()) {
         outfile.createNewFile();
       }
@@ -125,7 +130,7 @@ public class AwsClient implements AwsS3Client {
       outstream.close();
 
       System.out.println("File copied successfully!!");
-      return new FileInputStream("/tmp/trappd/"+fileName);
+      return new FileInputStream(directoryName + fileName);
 
     } catch (IOException ioe) {
       ioe.printStackTrace();

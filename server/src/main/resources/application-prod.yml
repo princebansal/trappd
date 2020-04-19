@@ -36,7 +36,7 @@ logging:
   level:
     com:
       easycompany:
-        trappd: debug
+        trappd: info
     org:
       hibernate:
         SQL: info

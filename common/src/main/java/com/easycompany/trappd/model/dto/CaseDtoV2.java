@@ -10,64 +10,62 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Deprecated
-/** Use @{@link CaseDtoV2} instead */
-public class CaseDto {
+public class CaseDtoV2 {
 
-  @JsonProperty("Patient Number")
+  @JsonProperty("patientnumber")
   private String patientNumber;
 
-  @JsonProperty("State Patient Number")
+  @JsonProperty("statepatientnumber")
   private String statePatientNumber;
 
-  @JsonProperty("Date Announced")
+  @JsonProperty("dateannounced")
   private String dateAnnounced;
 
-  @JsonProperty("Age Bracket")
+  @JsonProperty("agebracket")
   private String ageBracket;
 
-  @JsonProperty("Gender")
+  @JsonProperty("gender")
   private String gender;
 
-  @JsonProperty("Detected City")
+  @JsonProperty("detectedcity")
   private String detectedCity;
 
-  @JsonProperty("Detected District")
+  @JsonProperty("detecteddistrict")
   private String detectedDistrict;
 
-  @JsonProperty("Detected State")
+  @JsonProperty("detectedstate")
   private String detectedState;
 
-  @JsonProperty("State code")
+  @JsonProperty("statecode")
   private String stateCode;
 
-  @JsonProperty("Current Status")
+  @JsonProperty("currentstatus")
   private String currentStatus;
 
-  @JsonProperty("Notes")
+  @JsonProperty("notes")
   private String notes;
 
-  @JsonProperty("Contracted from which Patient (Suspected)")
+  @JsonProperty("contractedfromwhichpatientsuspected")
   private String contactPatient;
 
-  @JsonProperty("Nationality")
+  @JsonProperty("nationality")
   private String nationality;
 
-  @JsonProperty("Type of transmission")
+  @JsonProperty("typeoftransmission")
   private String typeOfTransmission;
 
-  @JsonProperty("Status Change Date")
+  @JsonProperty("statuschangedate")
   private String statusChangeDate;
 
-  @JsonProperty("Source_1")
+  @JsonProperty("source1")
   private String source1;
 
-  @JsonProperty("Source_2")
+  @JsonProperty("source2")
   private String source2;
 
-  @JsonProperty("Source_3")
+  @JsonProperty("source3")
   private String source3;
 
-  @JsonProperty("Backup Notes")
+  @JsonProperty("backupnotes")
   private String backupNotes;
 }
