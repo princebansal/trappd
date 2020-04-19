@@ -13,11 +13,14 @@ import com.easycompany.trappd.model.dto.DataInsightsCardDto;
 import com.easycompany.trappd.model.dto.DataInsightsDto;
 import com.easycompany.trappd.model.dto.DataTimelineDto;
 import com.easycompany.trappd.model.dto.DetailedDataDto;
+import com.easycompany.trappd.model.dto.StateDto;
 import com.easycompany.trappd.model.dto.ThingsToDoCardDto;
 import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.service.HomePageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -129,7 +132,8 @@ class HomePageControllerTest {
     // When
     Mockito.doReturn(getHomePageDataResponse)
         .when(homePageService)
-        .getHomePageDataForCountryAndCity(requestCountry.getCode(), requestCity.getCode());
+        .getHomePageDataForCountryAndCity(requestCountry.getCode(),
+            requestCity.getCode());
     // Then
     mockMvc
         .perform(
