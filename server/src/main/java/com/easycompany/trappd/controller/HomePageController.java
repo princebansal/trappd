@@ -10,8 +10,10 @@ import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetAllGeographicalEntitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataV2Response;
+import com.easycompany.trappd.model.dto.response.QuickGameDataResponse;
 import com.easycompany.trappd.service.HomePageService;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -60,5 +62,12 @@ public class HomePageController implements HomePageApi {
       throws BadRequestException, CityNotFoundException, CountryNotFoundException, StateNotFoundException {
     return ResponseEntity.ok(
         homePageService.getHomePageDataByGeography(GeographyType.getEnumByName(geoType), geoValue));
+  }
+
+  @GetMapping("/fetchQuickGameData")
+  @Override
+  public ResponseEntity<List<QuickGameDataResponse>> getQuickGamesData() {
+    return ResponseEntity.ok(
+        homePageService.getQuickGameData());
   }
 }
