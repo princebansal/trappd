@@ -10,7 +10,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = false)
 public class QuickGameDataResponse extends BaseResponse {
-
   private String category;
   private String title;
   private String detail;
