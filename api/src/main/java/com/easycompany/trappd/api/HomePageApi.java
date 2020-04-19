@@ -8,7 +8,9 @@ import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetAllGeographicalEntitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataV2Response;
+import com.easycompany.trappd.model.dto.response.QuickGameDataResponse;
 
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 public interface HomePageApi {
@@ -24,5 +26,10 @@ public interface HomePageApi {
 
   ResponseEntity<GetHomePageDataV2Response> getHomePageDataV2(String geoType,
                                                               String geoValue)
-      throws BadRequestException, CountryNotFoundException, CityNotFoundException, StateNotFoundException;
+      throws BadRequestException, CountryNotFoundException, CityNotFoundException,
+      StateNotFoundException;
+
+  ResponseEntity<List<QuickGameDataResponse>> getQuickGamesData()
+      throws BadRequestException, CountryNotFoundException, CityNotFoundException,
+      StateNotFoundException;
 }
