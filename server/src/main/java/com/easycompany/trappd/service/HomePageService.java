@@ -21,7 +21,6 @@ import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetAllGeographicalEntitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataV2Response;
-import com.easycompany.trappd.model.entity.AbstractBaseEntity;
 import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
@@ -253,6 +252,15 @@ public class HomePageService {
 
   public GetHomePageDataV2Response getHomePageDataByGeography(GeographyType geoType, String geoValue)
       throws CityNotFoundException, CountryNotFoundException, StateNotFoundException {
-    return geoObjectFactory.getDashboardObjectBuilder(geoType).createDashBoardDto(geoValue);
+    GetHomePageDataV2Response response = geoObjectFactory.getDashboardObjectBuilder(geoType)
+        .createDashBoardDto(geoValue);
+    response.getDashboard().setMoreInformation(getMoreInformation());
+    response.getDashboard().setThingsToDoCard(ThingsToDoCardDto.builder()
+        .addItem("Play around")
+        .addItem("Do something")
+        .build());
+
+
+    return response;
   }
 }
