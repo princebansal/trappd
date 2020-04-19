@@ -12,6 +12,7 @@ import java.text.ParseException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -27,7 +28,8 @@ public class CovidCaseDtoMapperTest {
   public void toCovidCaseEntity_provideCaseDto_expectValidMappedResult()
       throws JsonProcessingException, ParseException {
     // Given
-    CaseDtoV2 caseDtoV2 = objectMapper.readValue(SampleDataSupplier.sampleCaseDto(), CaseDtoV2.class);
+    CaseDtoV2 caseDtoV2 =
+        objectMapper.readValue(SampleDataSupplier.sampleCaseDtoV2(), CaseDtoV2.class);
     // When
     CovidCaseEntity covidCaseEntity = covidCaseDtoMapper.toCovidCaseEntity(caseDtoV2);
     // Then
@@ -35,7 +37,8 @@ public class CovidCaseDtoMapperTest {
     Assertions.assertEquals(null, covidCaseEntity.getId());
     Assertions.assertEquals(caseDtoV2.getPatientNumber(), covidCaseEntity.getPatientNumber());
     Assertions.assertEquals(
-        DateTimeUtil.parseLocalDate(caseDtoV2.getDateAnnounced(), AppConstants.ANNOUNCED_DATE_FORMAT),
+        DateTimeUtil.parseLocalDate(
+            caseDtoV2.getDateAnnounced(), AppConstants.ANNOUNCED_DATE_FORMAT),
         covidCaseEntity.getAnnouncedDate());
     Assertions.assertNull(covidCaseEntity.getCity());
     Assertions.assertNull(covidCaseEntity.getState());

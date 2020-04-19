@@ -50,6 +50,9 @@ public interface DeathAndRecoveryDtoMapper {
 
   @Named("stringToCaseStatusEnum")
   static CaseStatus stringToCaseStatusEnum(String s) {
+    if (s == null) {
+      return CaseStatus.ACTIVE;
+    }
     switch (s) {
       case "Recovered":
         return CaseStatus.RECOVERED;

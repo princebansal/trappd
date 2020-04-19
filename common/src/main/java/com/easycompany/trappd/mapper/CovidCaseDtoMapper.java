@@ -61,6 +61,9 @@ public interface CovidCaseDtoMapper {
 
   @Named("stringToCaseStatusEnum")
   static CaseStatus stringToCaseStatusEnum(String s) {
+    if (s == null) {
+      return CaseStatus.ACTIVE;
+    }
     switch (s) {
       case "Recovered":
         return CaseStatus.RECOVERED;
@@ -74,6 +77,9 @@ public interface CovidCaseDtoMapper {
 
   @Named("stringToTransmissionTypeEnum")
   static TransmissionType stringToTransmissionTypeEnum(String s) {
+    if (s == null) {
+      return TransmissionType.UNKNOWN;
+    }
     switch (s) {
       case "Imported":
         return TransmissionType.IMPORTED;
