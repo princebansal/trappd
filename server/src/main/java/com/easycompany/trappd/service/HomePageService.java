@@ -7,6 +7,7 @@ import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.exception.StateNotFoundException;
 import com.easycompany.trappd.mapper.CityEntityMapper;
 import com.easycompany.trappd.mapper.CountryEntityMapper;
+import com.easycompany.trappd.mapper.QuickGameMapper;
 import com.easycompany.trappd.mapper.StateEntityMapper;
 import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.GeographyType;
@@ -21,6 +22,7 @@ import com.easycompany.trappd.model.dto.response.GetAllCitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetAllGeographicalEntitiesResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataV2Response;
+import com.easycompany.trappd.model.dto.response.QuickGameDataResponse;
 import com.easycompany.trappd.model.entity.CityEntity;
 import com.easycompany.trappd.model.entity.CountryEntity;
 import com.easycompany.trappd.model.entity.CovidCaseEntity;
@@ -28,6 +30,7 @@ import com.easycompany.trappd.model.entity.StateEntity;
 import com.easycompany.trappd.repository.CityRepository;
 import com.easycompany.trappd.repository.CountryRepository;
 import com.easycompany.trappd.repository.CovidCaseRepository;
+import com.easycompany.trappd.repository.QuickGameRepository;
 import com.easycompany.trappd.repository.StateRepository;
 import com.easycompany.trappd.util.AppConstants;
 import com.easycompany.trappd.util.DateTimeUtil;
@@ -61,6 +64,8 @@ public class HomePageService {
   private final CityEntityMapper cityEntityMapper;
   private final ObjectMapper objectMapper;
   private final GeoObjectFactory geoObjectFactory;
+  private final QuickGameMapper quickGameMapper;
+  private final QuickGameRepository quickGameRepository;
 
   @Autowired
   public HomePageService(CountryRepository countryRepository,
@@ -71,7 +76,9 @@ public class HomePageService {
                          StateEntityMapper stateEntityMapper,
                          CityEntityMapper cityEntityMapper,
                          ObjectMapper objectMapper,
-                         GeoObjectFactory geoObjectFactory) {
+                         GeoObjectFactory geoObjectFactory,
+                         QuickGameMapper quickGameMapper,
+                         QuickGameRepository quickGameRepository) {
     this.countryRepository = countryRepository;
     this.stateRepository = stateRepository;
     this.cityRepository = cityRepository;
@@ -81,6 +88,8 @@ public class HomePageService {
     this.cityEntityMapper = cityEntityMapper;
     this.objectMapper = objectMapper;
     this.geoObjectFactory = geoObjectFactory;
+    this.quickGameMapper = quickGameMapper;
+    this.quickGameRepository = quickGameRepository;
   }
 
   public GetAllCitiesResponse getListOfAllCitiesForCountry(String countryCode)
@@ -260,7 +269,10 @@ public class HomePageService {
         .addItem("Do something")
         .build());
 
-
     return response;
+  }
+
+  public List<QuickGameDataResponse> getQuickGameData() {
+    return quickGameMapper.toQuickGameResponseList(quickGameRepository.findByEnabledTrue());
   }
 }
