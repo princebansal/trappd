@@ -10,6 +10,15 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
@@ -67,12 +76,61 @@ public class AwsClient implements AwsS3Client {
 
   @NotNull
   @Override
-  public InputStream downloadFile(String fileName) {
+  public InputStream downloadFile(String fileName) throws FileNotFoundException {
     log.info("File ready to download from S3 [ name: {}]", fileName);
-    GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, fileName);
-    S3Object s3Object = s3client.getObject(getObjectRequest);
-    log.info("File downloaded from S3 at path {}/{}", bucketName, fileName);
-    return s3Object.getObjectContent();
+    File file = new File(fileName);
+    if (!file.exists()) {
+      log.debug("Local file doesn't exists");
+      GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, fileName);
+      S3Object s3Object = s3client.getObject(getObjectRequest);
+      log.info("File downloaded from S3 at path {}/{}", bucketName, fileName);
+      return copyToDumpFile(s3Object.getObjectContent(), fileName);
+    } else {
+      log.debug("Local file exists. Falling back to local file instead of S3");
+      try {
+        return new FileInputStream(file);
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      }
+    }
+    throw new FileNotFoundException("File not found to be downloaded with name " + fileName);
+  }
+
+  private InputStream copyToDumpFile(S3ObjectInputStream inputStream, String fileName) {
+    FileOutputStream outstream = null;
+
+    try {
+      File directory = new File("/tmp/trappd/");
+      if (!directory.exists()) {
+        directory.mkdir();
+      }
+      File outfile=new File("/tmp/trappd/"+fileName);
+      if (!outfile.exists()) {
+        outfile.createNewFile();
+      }
+      outstream = new FileOutputStream(outfile);
+
+      byte[] buffer = new byte[1024];
+
+      int length;
+      /*copying the contents from input stream to
+       * output stream using read and write methods
+       */
+      while ((length = inputStream.read(buffer)) > 0) {
+        outstream.write(buffer, 0, length);
+      }
+
+      // Closing the input/output file streams
+      inputStream.close();
+      outstream.close();
+
+      System.out.println("File copied successfully!!");
+      return new FileInputStream("/tmp/trappd/"+fileName);
+
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+    }
+    return null;
   }
   /*@Override
   public String downloadFileInString(String pathToFile) throws IOException {
