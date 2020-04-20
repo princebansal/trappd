@@ -61,7 +61,7 @@ public class DeathAndRecoveryUpdaterHelper
   @Override
   @Transactional(propagation = Propagation.REQUIRED)
   public void update(List<DeathAndRecoveryDto> latestCaseList) {
-    log.debug("Starting update process for deaths and recovery cases");
+    log.info("Starting update process for deaths and recovery cases");
     if (latestCaseList == null) {
       log.error("Returned deathsAndRecovery cases is null from S3/local file. Skipping update");
       return;

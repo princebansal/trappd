@@ -10,7 +10,6 @@ import com.easycompany.trappd.model.dto.response.GetHomePageDataResponse;
 import com.easycompany.trappd.model.dto.response.GetHomePageDataV2Response;
 import com.easycompany.trappd.model.dto.response.QuickGameDataResponse;
 
-import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 public interface HomePageApi {
@@ -29,7 +28,7 @@ public interface HomePageApi {
       throws BadRequestException, CountryNotFoundException, CityNotFoundException,
       StateNotFoundException;
 
-  ResponseEntity<List<QuickGameDataResponse>> getQuickGamesData()
+  ResponseEntity<QuickGameDataResponse> getQuickGamesData()
       throws BadRequestException, CountryNotFoundException, CityNotFoundException,
       StateNotFoundException;
 }

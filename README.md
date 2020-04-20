@@ -14,7 +14,7 @@ Command to build docker image <br>
 Command to run docker image <br>
 `docker run -p 8080:8080 -t trappd/server` <br>
 Command to tag docker image <br>
-`docker tag trappd/server:latest princebansal94/trappd:trappd-server-{version}}` <br>
+`docker tag trappd/server:latest princebansal94/trappd:trappd-server-{version}` <br>
 Command to push docker image to hub <br>
 `docker push princebansal94/trappd:trappd-server-{version}` <br>
 ### Trappd Data Service <br>

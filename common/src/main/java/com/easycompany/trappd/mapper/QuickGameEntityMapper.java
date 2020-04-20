@@ -1,5 +1,6 @@
 package com.easycompany.trappd.mapper;
 
+import com.easycompany.trappd.model.dto.QuickGameDto;
 import com.easycompany.trappd.model.dto.response.QuickGameDataResponse;
 import com.easycompany.trappd.model.entity.QuickGameEntity;
 
@@ -7,9 +8,9 @@ import java.util.List;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface QuickGameMapper {
+public interface QuickGameEntityMapper {
 
-  QuickGameDataResponse toQuickGameResponse(QuickGameEntity quickGameEntity);
+  QuickGameDto toQuickGameDto(QuickGameEntity quickGameEntity);
 
-  List<QuickGameDataResponse> toQuickGameResponseList(List<QuickGameEntity> quickGameEntities);
+  List<QuickGameDto> toQuickGameDtoList(List<QuickGameEntity> quickGameEntities);
 }

@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: prod,main
   datasource:
     password: root
     url: jdbc:mysql://localhost:3306/trappd_db?useSSL=false&autoReconnect=true&allowPublicKeyRetrieval=true

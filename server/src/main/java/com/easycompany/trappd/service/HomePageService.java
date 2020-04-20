@@ -7,7 +7,7 @@ import com.easycompany.trappd.exception.CountryNotFoundException;
 import com.easycompany.trappd.exception.StateNotFoundException;
 import com.easycompany.trappd.mapper.CityEntityMapper;
 import com.easycompany.trappd.mapper.CountryEntityMapper;
-import com.easycompany.trappd.mapper.QuickGameMapper;
+import com.easycompany.trappd.mapper.QuickGameEntityMapper;
 import com.easycompany.trappd.mapper.StateEntityMapper;
 import com.easycompany.trappd.model.constant.CaseStatus;
 import com.easycompany.trappd.model.constant.GeographyType;
@@ -64,21 +64,22 @@ public class HomePageService {
   private final CityEntityMapper cityEntityMapper;
   private final ObjectMapper objectMapper;
   private final GeoObjectFactory geoObjectFactory;
-  private final QuickGameMapper quickGameMapper;
+  private final QuickGameEntityMapper quickGameEntityMapper;
   private final QuickGameRepository quickGameRepository;
 
   @Autowired
-  public HomePageService(CountryRepository countryRepository,
-                         StateRepository stateRepository,
-                         CityRepository cityRepository,
-                         CovidCaseRepository covidCaseRepository,
-                         CountryEntityMapper countryEntityMapper,
-                         StateEntityMapper stateEntityMapper,
-                         CityEntityMapper cityEntityMapper,
-                         ObjectMapper objectMapper,
-                         GeoObjectFactory geoObjectFactory,
-                         QuickGameMapper quickGameMapper,
-                         QuickGameRepository quickGameRepository) {
+  public HomePageService(
+      CountryRepository countryRepository,
+      StateRepository stateRepository,
+      CityRepository cityRepository,
+      CovidCaseRepository covidCaseRepository,
+      CountryEntityMapper countryEntityMapper,
+      StateEntityMapper stateEntityMapper,
+      CityEntityMapper cityEntityMapper,
+      ObjectMapper objectMapper,
+      GeoObjectFactory geoObjectFactory,
+      QuickGameEntityMapper quickGameEntityMapper,
+      QuickGameRepository quickGameRepository) {
     this.countryRepository = countryRepository;
     this.stateRepository = stateRepository;
     this.cityRepository = cityRepository;
@@ -88,7 +89,7 @@ public class HomePageService {
     this.cityEntityMapper = cityEntityMapper;
     this.objectMapper = objectMapper;
     this.geoObjectFactory = geoObjectFactory;
-    this.quickGameMapper = quickGameMapper;
+    this.quickGameEntityMapper = quickGameEntityMapper;
     this.quickGameRepository = quickGameRepository;
   }
 
@@ -114,10 +115,11 @@ public class HomePageService {
       throws CountryNotFoundException {
 
     List<CountryEntity> countryEntities = new ArrayList<>();
-    CountryEntity countryEntity = countryRepository
-        .findByCode(Objects.isNull(countryCode) ? "IN" : countryCode)
-        .orElseThrow(() -> new CountryNotFoundException(
-            "Country not found with code " + countryCode));
+    CountryEntity countryEntity =
+        countryRepository
+            .findByCode(Objects.isNull(countryCode) ? "IN" : countryCode)
+            .orElseThrow(
+                () -> new CountryNotFoundException("Country not found with code " + countryCode));
 
     if (Objects.isNull(countryCode)) {
       countryEntities.addAll(countryRepository.findAll());
@@ -126,11 +128,12 @@ public class HomePageService {
     }
 
     return GetAllGeographicalEntitiesResponse.builder()
-        .countryDto(countryEntityMapper.toCountryDtoList(countryEntities))
-        .states(stateEntityMapper.toStateDtoList(
-            countryEntity.getStates().stream()
-                .sorted(Comparator.comparing(StateEntity::getCode))
-                .collect(Collectors.toList())))
+        .countries(countryEntityMapper.toCountryDtoList(countryEntities))
+        .states(
+            stateEntityMapper.toStateDtoList(
+                countryEntity.getStates().stream()
+                    .sorted(Comparator.comparing(StateEntity::getCode))
+                    .collect(Collectors.toList())))
         .cities(
             cityEntityMapper.toCityDtoList(
                 countryEntity.getCities().stream()
@@ -172,8 +175,8 @@ public class HomePageService {
 
     long totalCases = covidCaseRepository.countAllByCity(cityEntity);
     long totalDeaths = covidCaseRepository.countAllByStatusAndCity(CaseStatus.DECEASED, cityEntity);
-    long totalRecovered = covidCaseRepository.countAllByStatusAndCity(
-        CaseStatus.RECOVERED, cityEntity);
+    long totalRecovered =
+        covidCaseRepository.countAllByStatusAndCity(CaseStatus.RECOVERED, cityEntity);
     return GetHomePageDataResponse.builder()
         .city(cityEntityMapper.toCityDto(cityEntity))
         .country(countryEntityMapper.toCountryDto(countryEntity))
@@ -259,20 +262,24 @@ public class HomePageService {
     }
   }
 
-  public GetHomePageDataV2Response getHomePageDataByGeography(GeographyType geoType, String geoValue)
+  public GetHomePageDataV2Response getHomePageDataByGeography(
+      GeographyType geoType, String geoValue)
       throws CityNotFoundException, CountryNotFoundException, StateNotFoundException {
-    GetHomePageDataV2Response response = geoObjectFactory.getDashboardObjectBuilder(geoType)
-        .createDashBoardDto(geoValue);
+    GetHomePageDataV2Response response =
+        geoObjectFactory.getDashboardObjectBuilder(geoType).createDashBoardDto(geoValue);
     response.getDashboard().setMoreInformation(getMoreInformation());
-    response.getDashboard().setThingsToDoCard(ThingsToDoCardDto.builder()
-        .addItem("Play around")
-        .addItem("Do something")
-        .build());
+    response
+        .getDashboard()
+        .setThingsToDoCard(
+            ThingsToDoCardDto.builder().addItem("Play around").addItem("Do something").build());
 
     return response;
   }
 
-  public List<QuickGameDataResponse> getQuickGameData() {
-    return quickGameMapper.toQuickGameResponseList(quickGameRepository.findByEnabledTrue());
+  public QuickGameDataResponse getQuickGameData() {
+    return QuickGameDataResponse.builder()
+        .quickGameList(
+            quickGameEntityMapper.toQuickGameDtoList(quickGameRepository.findByEnabledTrue()))
+        .build();
   }
 }

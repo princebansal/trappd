@@ -91,6 +91,8 @@ public class RawDataUpdaterHelper extends DataUpdaterHelper<CaseDtoV2, CovidCase
       log.debug("Checking latest data against old records to update");
       checkAndUpdate(latestCaseList, listOfExistingRecords);
     }
+
+    onUpdateSuccess("Raw data update process finished successfully");
   }
 
   @Override
@@ -134,7 +136,6 @@ public class RawDataUpdaterHelper extends DataUpdaterHelper<CaseDtoV2, CovidCase
     } else {
       log.debug("There are no records to update");
     }
-    onUpdateSuccess("Raw data update process finished successfully");
   }
 
   @Override

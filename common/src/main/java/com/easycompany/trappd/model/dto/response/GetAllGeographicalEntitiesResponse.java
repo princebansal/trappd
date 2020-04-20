@@ -18,7 +18,7 @@ public class GetAllGeographicalEntitiesResponse extends BaseResponse {
   /**
    * The Country dto.
    */
-  private List<CountryDto> countryDto;
+  private List<CountryDto> countries;
 
   /**
    * The State dto.
